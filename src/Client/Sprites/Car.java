@@ -3,7 +3,9 @@ package Client.Sprites;
 public class Car extends Sprite{
     private String carColor;
 
-    public Car () { }
+    public Car (String carColor) {
+        this.carColor = carColor;
+    }
 
 
     public String getCarColor() {

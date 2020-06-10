@@ -7,9 +7,10 @@ public class Player {
     private Integer points;
     private Car carSelected;
 
-    public Player() {
+    public Player(Car car) {
         this.lives = 3;
         this.points = 0;
+        this.carSelected = car;
     }
 
     /**
