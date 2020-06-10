@@ -38,6 +38,18 @@ public class Sprite {
         this.width = width;
     }
 
+    public Image getImage() {
+        return this.image;
+    }
+
+    public Integer getWidth() {
+        return this.width;
+    }
+
+    public Integer getHeight() {
+        return this.height;
+    }
+
     /**
      *
      * @param x Posicion en x
