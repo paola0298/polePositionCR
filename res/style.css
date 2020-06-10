@@ -1,0 +1,35 @@
+.background-pane {
+    -fx-background-image: url("background-1-t.png");
+    /*-fx-background-size: cover, auto;*/
+    -fx-background-position: center;
+    -fx-background-size: contain;
+    -fx-background-repeat: no-repeat;
+    -fx-background-color: #484f59;
+}
+
+.background-car-pane {
+    -fx-background-image: url("background-blue.jpg");
+    /*-fx-background-image: url("background-race.jpg");*/
+    -fx-background-size: cover, auto;
+    /*-fx-background-position: center;*/
+    /*-fx-background-size: contain;*/
+    -fx-background-repeat: no-repeat;
+    /*-fx-background-color: #484f59;*/
+}
+
+.fancytext {
+    -fx-font: 100px Tahoma;
+    /*-fx-fill: linear-gradient(from 0% 0% to 100% 200%, repeat, aqua 0%, red 50%);*/
+    -fx-fill: #111111;
+    -fx-stroke: #111111;
+    -fx-stroke-width: 1;
+}
+
+.fancytext1 {
+    -fx-font: 65px Tahoma;
+    /*-fx-fill: linear-gradient(from 0% 0% to 100% 200%, repeat, aqua 0%, red 50%);*/
+    -fx-fill: #111111;
+    -fx-stroke: #111111;
+    -fx-stroke-width: 1;
+}
+
