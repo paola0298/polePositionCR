@@ -36,7 +36,7 @@ public class PrincipalMenu extends Application {
         scene.getStylesheets().add("file:///" + cwd.replaceAll("\\\\", "/") + "/res/style.css");
         stage.setTitle("Pole Position CR");
         stage.setScene(scene);
-        stage.getIcons().add(imageLoader(cwd.replaceAll("\\\\", "/") + "/res/icon-1.png"));
+        stage.getIcons().add(imageLoader(cwd.replaceAll("\\\\", "/") + "/res/icon-2.png"));
         menuWindow.toFront();
         stage.show();
     }
