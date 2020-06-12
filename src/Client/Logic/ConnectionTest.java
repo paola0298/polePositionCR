@@ -1,14 +1,38 @@
 package Client.Logic;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeCreator;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 public class ConnectionTest {
     public static void main(String[] args) {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode json = mapper.createObjectNode();
+        json.put("action", "create_game");
+        json.put("msg", "Hello from client!");
+
+        String outdata;
+        try{
+            outdata = mapper.writeValueAsString(json);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return;
+        }
+        System.out.println("OutData: " + outdata);
+
         Connection con = new Connection("localhost", 8080);
+        var data = con.connect(outdata);
 
-        var data = con.connect("Hello from java client!");
-        System.out.println("[Server] " + data);
+        JsonNode result;
+        try {
+            result = mapper.readTree(data);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return;
+        }
 
-        var data2 = Connection.connect("localhost", 8080, "Hello from java client2!");
-        System.out.println("[Server] " + data2);
-
+        System.out.println("[Server] " + result.toPrettyString());
     }
 }
