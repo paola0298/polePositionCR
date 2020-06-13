@@ -12,14 +12,14 @@ import java.net.UnknownHostException;
 public class Connection {
 
     private final String host;
-    private final int port;
+    private final Integer port;
 
     /***
      * Constructor del objeto de conexión predeterminado.
      * @param host Dirección del servidor al cual conectarse.
      * @param port Puerto por el cuál conectarse al servidor.
      */
-    public Connection(String host, int port) {
+    public Connection(String host, Integer port) {
         this.host = host;
         this.port = port;
     }
@@ -40,7 +40,7 @@ public class Connection {
      * @param data Datos a ser enviados al servidor.
      * @return Respuesta del servidor.
      */
-    public static String connect(String host, int port, String data) {
+    public static String connect(String host, Integer port, String data) {
         Socket socket;
 
         try {
@@ -82,7 +82,7 @@ public class Connection {
             return null;
         }
 
-        byte[] inputData = new byte[1024];
+        var inputData = new byte[2048];
 
         try {
             var bytesRead = inputStream.read(inputData);

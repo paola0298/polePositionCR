@@ -1,5 +1,6 @@
-package Client.Logic;
+package Client.Test;
 
+import Client.Logic.Connection;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -10,8 +11,7 @@ public class ConnectionTest {
     public static void main(String[] args) {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode json = mapper.createObjectNode();
-        json.put("action", "create_game");
-        json.put("msg", "Hello from client!");
+        json.put("action", "get_track");
 
         String outdata;
         try{
