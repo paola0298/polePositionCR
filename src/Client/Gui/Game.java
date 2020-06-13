@@ -1,6 +1,7 @@
 package Client.Gui;
 
 import Client.Logic.Connection;
+import Client.Logic.Line;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,25 +31,7 @@ public class Game extends Application {
     Integer pos = 0;
     Integer playerX = 0;
 
-    class Line2d {
-        Float x,y,z;
-        Float X,Y,W;
-        Float scale;
-        Float curve;
-
-        Line2d() {
-            curve = x = y = z = 0f;
-        }
-
-        void project(Integer camX, Integer camY, Integer camZ) {
-            scale = cameraDepth / (z - camZ);
-            X = (1 + scale * (x - camX)) * width / 2;
-            Y = (1 - scale * (y - camY)) * height / 2;
-            W = scale * roadWidth * width / 2;
-        }
-    }
-
-    private ArrayList<Line2d> trackLines;
+    private ArrayList<Line> trackLines;
     private Integer lineCount;
 
     private final Color grass = Color.rgb(68, 157, 15);
@@ -103,15 +86,14 @@ public class Game extends Application {
                 Double maxY = height.doubleValue();
 
                 //Para cuestas
-                Integer camHeight = camDefaultHeight + trackLines.get(startpos).y.intValue();
+//                Integer camHeight = camDefaultHeight + trackLines.get(startpos).y.intValue();
 
                 for (Integer n = startpos; n < startpos + 300; n++) {
-                    Line2d line = trackLines.get(n % lineCount);
+                    Line line = trackLines.get(n % lineCount);
 
                     //Proyectar la línea en 2d
-                    //Para cuestas
                     Integer camZ = pos - (n >= lineCount ? lineCount * segmentLength : 0);
-                    line.project(playerX - x.intValue(), camHeight, camZ);
+                    line.project(playerX - x.intValue(), camDefaultHeight, camZ);
 
                     //Procesar las curvas
                     x += dx;
@@ -121,7 +103,7 @@ public class Game extends Application {
                     if (line.Y <= 0 || line.Y >= maxY) continue;
                     maxY = line.Y.doubleValue();
 
-                    Line2d prev;
+                    Line prev;
                     if (n == 0) {
                         prev = line;
                     } else {
@@ -191,7 +173,10 @@ public class Game extends Application {
     }
 
     private void parseTrack(JsonNode track) {
+        Line.setValues(cameraDepth, width, height, roadWidth);
+
         trackLines = new ArrayList<>();
+
 
         Integer length = track.get("length").asInt();
         System.out.println(track.toPrettyString());
@@ -199,16 +184,16 @@ public class Game extends Application {
         JsonNode curves = track.get("curves");
 
         for (Integer i = 0; i < length; i++) {
-            Line2d line = new Line2d();
+            Line line = new Line();
             line.z = i * segmentLength.floatValue();
 
             line.curve = checkInRange(i, curves);
 
             //Usar para cuestas
-            if (i > 700) {
-                Double value = Math.sin(i / 30.0);
-                line.y = value.floatValue() * camDefaultHeight;
-            }
+//            if (i > 700) {
+//                Double value = Math.sin(i / 30.0);
+//                line.y = value.floatValue() * camDefaultHeight;
+//            }
 
             trackLines.add(line);
         }
