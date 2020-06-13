@@ -1,21 +1,12 @@
 package Client.Test;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.event.*;
-import java.io.File;
-import java.io.IOException;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import javax.swing.text.Segment;
-
-//import com.javatmz.javaapp.Aknari.MoveAction;
 
 public class RoadApp extends JFrame {
 
@@ -30,10 +21,8 @@ public class RoadApp extends JFrame {
     int playerX = 0;
     int pos = 0;
 
-    List<Line> lines = new ArrayList<RoadApp.Line>();
-
-    List<Integer> listValues = new ArrayList<Integer>();
-
+    List<Line> lines = new ArrayList<>();
+    //List<Integer> listValues = new ArrayList<>();
     DrawPanel drawPanel = new DrawPanel();
 
     public RoadApp() {
@@ -44,7 +33,7 @@ public class RoadApp extends JFrame {
                 line.curve = 4;
             }
             if (i > 1000) {
-                line.y = Math.sin(Math.toRadians(i / 30)) * 1500;
+                line.y = Math.sin(Math.toRadians(((double) i) / 30)) * 1500;
                 if (line.y < 0) {
                     line.y = 0;
                 }
@@ -56,10 +45,10 @@ public class RoadApp extends JFrame {
                 line.drawTree = true;
                 System.out.println("drawTree " + i);
             }
-
             lines.add(line);
         }
         N = lines.size();
+
 
         ActionListener listener = new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
@@ -68,6 +57,7 @@ public class RoadApp extends JFrame {
 
             }
         };
+
         Timer timer = new Timer(10, listener);
         timer.start();
         add(drawPanel);
@@ -162,7 +152,7 @@ public class RoadApp extends JFrame {
                     Color midel =  ((n / 2) % 2) == 0 ? new Color(255, 255, 255) : new Color(0, 0, 0);
 
 
-                    Line p = null;
+                    Line p;
 
                     if (n == 0) {
                         p = l;
@@ -188,31 +178,13 @@ public class RoadApp extends JFrame {
             }
 //draw Skye
 
-            Graphics g9d = g;
-            g9d.setColor(Color.blue);
-            g9d.fillRect(0, 0, 1600, 387);
-
-            try {
-                g9d.drawImage(
-                        ImageIO.read(new File(
-                                "C:/Users/HP/Desktop/paintr/tangarfa/workspace/java-tmz-test/ressource/cropped-sky-web-background.jpg")),
-                        0, 0, this);
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+            g.setColor(Color.blue);
+            g.fillRect(0, 0, 1600, 387);
 
             // draw tree
             for (int n = startPos + 300; n > startPos; n--) {
                 if (lines.get(n % N).drawTree) {
                     lines.get(n % N).drawGraphic();
-//					System.out.println("OK");
-                    Graphics gd = g;
-                    //gd.set
-					/*gd.setColor(Color.BLACK);
-						gd.fillRect((int) lines.get(n % N).destX, (int) lines.get(n % N).destY,23,70);
-					*/
-
                 }
             }
 
@@ -220,12 +192,11 @@ public class RoadApp extends JFrame {
 
         void drawQwad(Graphics g, Color c, int x1, int y1, int w1, int x2, int y2, int w2) {
 
-            Graphics g9d = g;
             int[] x9Points = { x1 - w1, x2 - w2, x2 + w2, x1 + w1 };
             int[] y9Points = { y1, y2, y2, y1 };
             int n9Points = 4;
-            g9d.setColor(c);
-            g9d.fillPolygon(x9Points, y9Points, n9Points);
+            g.setColor(c);
+            g.fillPolygon(x9Points, y9Points, n9Points);
 
         }
 
@@ -235,18 +206,13 @@ public class RoadApp extends JFrame {
     }
 
     public static void main(String[] args) {
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new RoadApp();
-            }
-        });
+        EventQueue.invokeLater(RoadApp::new);
     }
 
     class Line {
         double x, y, z;
         double X, Y, W;
         double scale, curve, spriteX, clip;
-        Graphics graphic;
 
         double destX;
         double destY;
@@ -270,8 +236,8 @@ public class RoadApp extends JFrame {
             int h = 100;
             destX = X + scale * spriteX * with / 2;
             destY = Y + 4;
-            destW = W * W / 266;
-            destH = h * W / 266;
+            destW = (double) W * W / 266;
+            destH = (double) h * W / 266;
 
             destX += destW * spriteX;
             destY += destH * (-1);
