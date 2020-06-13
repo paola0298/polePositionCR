@@ -19,7 +19,6 @@ public class InputTest extends Application {
     private GraphicsContext graphicsContext;
     private ArrayList<String> input;
     private Scene mainScene;
-    private Image car;
     private Car carSprite;
     private Long lastNanoTime;
 
@@ -54,7 +53,6 @@ public class InputTest extends Application {
         }.start();
 
         stage.show();
-
     }
 
     private void prepareActionHandlers() {
@@ -68,7 +66,6 @@ public class InputTest extends Application {
     }
 
     private void loadSprite() {
-        car = new Image(new File("res/car.png").toURI().toString());
         carSprite = new Car("Rojo");
         carSprite.setImage("/res/car.png", 100, 100);
         carSprite.setPosition(300.0, 400.0);
