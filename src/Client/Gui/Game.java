@@ -188,7 +188,7 @@ public class Game extends Application {
     private void loadSprite() {
         carSprite = new Car("Rojo");
         carSprite.setImage("/res/car.png", 100, 100);
-        carSprite.setPosition(400.0, 400.0);
+        carSprite.setPosition(400.0, 500.0);
     }
 
     private void handleKeyEvent(KeyEvent event) {
