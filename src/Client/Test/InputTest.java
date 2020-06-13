@@ -54,6 +54,7 @@ public class InputTest extends Application {
         }.start();
 
         stage.show();
+
     }
 
     private void prepareActionHandlers() {
