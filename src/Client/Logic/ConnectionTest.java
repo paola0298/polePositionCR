@@ -10,8 +10,7 @@ public class ConnectionTest {
     public static void main(String[] args) {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode json = mapper.createObjectNode();
-        json.put("action", "create_game");
-        json.put("msg", "Hello from client!");
+        json.put("action", "get_track");
 
         String outdata;
         try{
