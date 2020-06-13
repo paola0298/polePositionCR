@@ -70,6 +70,14 @@ public class Sprite {
         this.velocityY = y;
     }
 
+    public Double getVelocityX() {
+        return this.velocityX;
+    }
+
+    public Double getVelocityY() {
+        return this.velocityY;
+    }
+
     /**
      *
      * @param x Valor a incrementar en la velocidad de x

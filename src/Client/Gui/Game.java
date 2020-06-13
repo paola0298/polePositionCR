@@ -2,6 +2,7 @@ package Client.Gui;
 
 import Client.Logic.Connection;
 import Client.Logic.Line;
+import Client.Sprites.Car;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,6 +44,12 @@ public class Game extends Application {
     private ObjectMapper mapper;
     private Connection connection;
 
+    private ArrayList<String> input;
+    private Scene scene;
+    private Car carSprite;
+    private Long lastNanoTime;
+
+
     @Override
     public void start(Stage stage) {
         mapper = new ObjectMapper();
@@ -51,13 +58,19 @@ public class Game extends Application {
         stage.setTitle("Pole Position CR");
 
         Group root = new Group();
-        Scene scene = new Scene(root);
+        scene = new Scene(root);
         stage.setScene(scene);
 
         Canvas canvas = new Canvas(width, height);
         root.getChildren().add(canvas);
 
+        prepareActionHandlers();
+
         context = canvas.getGraphicsContext2D();
+
+        loadSprite();
+
+        lastNanoTime = System.nanoTime();
 
         //canvas.setOnKeyPressed((this::handleKeyEvent));
 
@@ -80,7 +93,8 @@ public class Game extends Application {
                 Integer startpos = (pos / segmentLength);
 
                 //Quitar luego, esto va a ser manejado por el input del usuario.
-                pos += 175;
+                //pos += 175;
+                manageInput(l);
 
                 Float x = 0f, dx = 0f;
                 Double maxY = height.doubleValue();
@@ -127,12 +141,54 @@ public class Game extends Application {
                     drawPolygon(track, prev.X.intValue(), prev.Y.intValue(), prev.W.intValue(), line.X.intValue(), line.Y.intValue(), line.W.intValue());
 
                 }
+                carSprite.render(context);
             }
         };
 
         getTrack();
         stage.show();
         timer.start();
+    }
+
+    private void manageInput(long currentNanoTime) {
+        Double elapsedTime = (currentNanoTime - lastNanoTime) / 1000000000.0;
+        lastNanoTime = currentNanoTime;
+
+        //game logic
+
+        carSprite.setVelocity(200.0, 0.0);
+        if (input.contains("LEFT"))
+            playerX -= carSprite.getVelocityX().intValue();
+//            carSprite.increaseVelocity(-50.0, 0.0);
+        if (input.contains("RIGHT"))
+            playerX += carSprite.getVelocityX().intValue();
+//            carSprite.increaseVelocity(50.0, 0.0);
+        if (input.contains("UP"))
+            pos += carSprite.getVelocityX().intValue();
+//            carSprite.increaseVelocity(0.0, -50.0);
+        if (input.contains("DOWN"))
+            pos -= carSprite.getVelocityX().intValue();
+//            carSprite.increaseVelocity(0.0, 50.0);
+        if (input.contains("SPACE"))
+            System.out.println("Disparar... ");
+
+        //carSprite.update(elapsedTime);
+    }
+
+    private void prepareActionHandlers() {
+        input = new ArrayList<>();
+        scene.setOnKeyPressed(keyEvent -> {
+            String code = keyEvent.getCode().toString();
+            if (!input.contains(code))
+                input.add(code);
+        });
+        scene.setOnKeyReleased(keyEvent -> input.remove(keyEvent.getCode().toString()));
+    }
+
+    private void loadSprite() {
+        carSprite = new Car("Rojo");
+        carSprite.setImage("/res/car.png", 100, 100);
+        carSprite.setPosition(400.0, 400.0);
     }
 
     private void handleKeyEvent(KeyEvent event) {
