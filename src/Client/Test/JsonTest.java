@@ -1,4 +1,4 @@
-package Client.Logic;
+package Client.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
