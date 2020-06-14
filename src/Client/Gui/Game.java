@@ -46,7 +46,6 @@ public class Game extends Application {
     private ArrayList<String> input;
     private Scene scene;
     private Car carSprite;
-    private Long lastNanoTime;
     private Integer laps;
 
     @Override
@@ -70,19 +69,17 @@ public class Game extends Application {
         loadSprite();
 
         carSprite.setVelocity(40.0, 0.0);
+
         laps = 0;
 
-        lastNanoTime = System.nanoTime();
-
-        AnimationTimer timer = new AnimationTimer() {
+        new AnimationTimer() {
             @Override
             public void handle(long l) {
                 context.clearRect(0,0,width, height);
 
                 //Evitar que startpos sea mayor a la cantidad de líneas.
-                if (pos >= lineCount * segmentLength) { //Vuelta completada
+                if (pos >= lineCount * segmentLength) {
                     pos -= lineCount * segmentLength;
-                    //TODO: vuelta completada.
                     laps += 1;
                 }
 
@@ -93,7 +90,7 @@ public class Game extends Application {
 
                 Integer startpos = (pos / segmentLength);
 
-                manageInput(l);
+                manageInput();
 
                 Float x = 0f, dx = 0f;
                 Double maxY = height.doubleValue();
@@ -145,7 +142,7 @@ public class Game extends Application {
 
                 //Para que el carro se salga en las curvas.
                 Line currentLine = trackLines.get(startpos % lineCount);
-                Float curve = ((currentLine.curve * -1f) / 25f) * carSprite.getVelocityY().floatValue();
+                Float curve = ((currentLine.curve * -1f) / 20f) * carSprite.getVelocityY().floatValue();
                 playerX += curve;
 
                 //Limita que tan lejos se puede desviar el jugador
@@ -163,48 +160,45 @@ public class Game extends Application {
 
                 carSprite.render(context);
             }
-        };
+        }.start();
 
         if (!getTrack())  {
             System.err.println("[Error] Failed to connect to server.");
             Platform.exit();
             return;
         }
+
         stage.show();
-        timer.start();
     }
 
-    private void manageInput(long currentNanoTime) {
-        Double elapsedTime = (currentNanoTime - lastNanoTime) / 1000000000.0;
-        lastNanoTime = currentNanoTime;
+    private void manageInput() {
 
         //game logic
         if (input.contains("LEFT")){
-//            carSprite.increaseVelocity(-50.0, 0.0);
             if (carSprite.getVelocityY() > 0) {
-                playerX -= carSprite.getVelocityX().intValue();
-            }
+                carSprite.setVelocity(-40d, carSprite.getVelocityY());
+                playerX += carSprite.getVelocityX().intValue();
 
+            }
         }
+
         if (input.contains("RIGHT")) {
-//            carSprite.increaseVelocity(50.0, 0.0);
             if (carSprite.getVelocityY() > 0) {
+                carSprite.setVelocity(40d, carSprite.getVelocityY());
                 playerX += carSprite.getVelocityX().intValue();
             }
         }
-        playerX += carSprite.getVelocityX().intValue();
+
         if (input.contains("UP")) {
             carSprite.increaseVelocity(0d, 0.4d);
             if (carSprite.getVelocityY() >= 240d) {
                 carSprite.setVelocity(carSprite.getVelocityX(), 240d);
             }
-            //System.out.println("Speed: " + carSprite.getVelocityY().intValue());
         } else {
             carSprite.increaseVelocity(0d, -0.6d);
             if (carSprite.getVelocityY() <= 0) {
                 carSprite.setVelocity(carSprite.getVelocityX(), 0d);
             }
-            //System.out.println("Speed: " + carSprite.getVelocityY().intValue());
         }
 
         if (input.contains("DOWN")) {
@@ -213,10 +207,10 @@ public class Game extends Application {
                 carSprite.setVelocity(carSprite.getVelocityX(), 0d);
             }
         }
+
         if (input.contains("SPACE"))
             System.out.println("Disparar... ");
 
-        //carSprite.update(elapsedTime);
     }
 
     private void prepareActionHandlers() {

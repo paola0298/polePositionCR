@@ -4,8 +4,15 @@
       <root url="jar://$PROJECT_DIR$/../jackson-annotations-2.11.0.jar!/" />
       <root url="jar://$PROJECT_DIR$/../jackson-core-2.11.0.jar!/" />
       <root url="jar://$PROJECT_DIR$/../jackson-databind-2.11.0.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/jackson-core-2.11.0.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/jackson-annotations-2.11.0.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/jackson-databind-2.11.0.jar!/" />
     </CLASSES>
-    <JAVADOC />
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/Downloads/jackson-core-2.11.0-javadoc.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/jackson-annotations-2.11.0-javadoc.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/jackson-databind-2.11.0-javadoc.jar!/" />
+    </JAVADOC>
     <SOURCES />
   </library>
 </component>
