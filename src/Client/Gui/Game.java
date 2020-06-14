@@ -69,7 +69,8 @@ public class Game extends Application {
 
         loadSprite();
 
-        carSprite.setVelocity(40.0, 0.0);
+//        carSprite.setVelocity(40.0, 0.0);
+        carSprite.setVelocity(0.0, 0.0);
         laps = 0;
 
         lastNanoTime = System.nanoTime();
@@ -182,14 +183,16 @@ public class Game extends Application {
         if (input.contains("LEFT")){
 //            carSprite.increaseVelocity(-50.0, 0.0);
             if (carSprite.getVelocityY() > 0) {
-                playerX -= carSprite.getVelocityX().intValue();
+                playerX -= 40;
+//                playerX -= carSprite.getVelocityX().intValue();
             }
 
         }
         if (input.contains("RIGHT")) {
 //            carSprite.increaseVelocity(50.0, 0.0);
             if (carSprite.getVelocityY() > 0) {
-                playerX += carSprite.getVelocityX().intValue();
+                playerX += 40;
+//                playerX += carSprite.getVelocityX().intValue();
             }
         }
         playerX += carSprite.getVelocityX().intValue();
