@@ -13,8 +13,6 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
@@ -30,7 +28,7 @@ public class Game extends Application {
     Float cameraDepth = 0.84f;
 
     Integer pos = 0;
-    Integer playerX = 0;
+    Float playerX = 0f;
 
     private ArrayList<Line> trackLines;
     private Integer lineCount;
@@ -48,7 +46,7 @@ public class Game extends Application {
     private Scene scene;
     private Car carSprite;
     private Long lastNanoTime;
-
+    private Integer laps;
 
     @Override
     public void start(Stage stage) {
@@ -70,9 +68,10 @@ public class Game extends Application {
 
         loadSprite();
 
-        lastNanoTime = System.nanoTime();
+        carSprite.setVelocity(40.0, 0.0);
+        laps = 0;
 
-        //canvas.setOnKeyPressed((this::handleKeyEvent));
+        lastNanoTime = System.nanoTime();
 
         AnimationTimer timer = new AnimationTimer() {
             @Override
@@ -83,6 +82,7 @@ public class Game extends Application {
                 if (pos >= lineCount * segmentLength) { //Vuelta completada
                     pos -= lineCount * segmentLength;
                     //TODO: vuelta completada.
+                    laps += 1;
                 }
 
                 //Evitar que startpos sea menor a cero.
@@ -92,8 +92,6 @@ public class Game extends Application {
 
                 Integer startpos = (pos / segmentLength);
 
-                //Quitar luego, esto va a ser manejado por el input del usuario.
-                //pos += 175;
                 manageInput(l);
 
                 Float x = 0f, dx = 0f;
@@ -102,12 +100,14 @@ public class Game extends Application {
                 //Para cuestas
 //                Integer camHeight = camDefaultHeight + trackLines.get(startpos).y.intValue();
 
+                pos += carSprite.getVelocityY().intValue();
+
                 for (Integer n = startpos; n < startpos + 300; n++) {
                     Line line = trackLines.get(n % lineCount);
 
                     //Proyectar la línea en 2d
                     Integer camZ = pos - (n >= lineCount ? lineCount * segmentLength : 0);
-                    line.project(playerX - x.intValue(), camDefaultHeight, camZ);
+                    line.project(playerX.intValue() - x.intValue(), camDefaultHeight, camZ);
 
                     //Procesar las curvas
                     x += dx;
@@ -141,6 +141,25 @@ public class Game extends Application {
                     drawPolygon(track, prev.X.intValue(), prev.Y.intValue(), prev.W.intValue(), line.X.intValue(), line.Y.intValue(), line.W.intValue());
 
                 }
+
+                //Para que el carro se salga en las curvas.
+                Line currentLine = trackLines.get(startpos % lineCount);
+                Float curve = ((currentLine.curve * -1f) / 25f) * carSprite.getVelocityY().floatValue();
+                playerX += curve;
+
+                //Limita que tan lejos se puede desviar el jugador
+                if (playerX <= -3000) {
+                    playerX =  -3000f;
+                } else if (playerX > 3000) {
+                    playerX = 3000f;
+                }
+
+                context.setFill(Color.BLACK);
+
+                Double speed = carSprite.getVelocityY() * 0.7d;
+                context.fillText(String.format("SPEED: %.1f KPH", speed), 100d, 100d);
+                context.fillText("LAPS: " + laps, 100d, 120d);
+
                 carSprite.render(context);
             }
         };
@@ -155,20 +174,32 @@ public class Game extends Application {
         lastNanoTime = currentNanoTime;
 
         //game logic
-
-        carSprite.setVelocity(200.0, 0.0);
         if (input.contains("LEFT"))
             playerX -= carSprite.getVelocityX().intValue();
 //            carSprite.increaseVelocity(-50.0, 0.0);
         if (input.contains("RIGHT"))
             playerX += carSprite.getVelocityX().intValue();
 //            carSprite.increaseVelocity(50.0, 0.0);
-        if (input.contains("UP"))
-            pos += carSprite.getVelocityX().intValue();
-//            carSprite.increaseVelocity(0.0, -50.0);
-        if (input.contains("DOWN"))
-            pos -= carSprite.getVelocityX().intValue();
-//            carSprite.increaseVelocity(0.0, 50.0);
+        if (input.contains("UP")) {
+            carSprite.increaseVelocity(0d, 0.4d);
+            if (carSprite.getVelocityY() >= 240d) {
+                carSprite.setVelocity(carSprite.getVelocityX(), 240d);
+            }
+            //System.out.println("Speed: " + carSprite.getVelocityY().intValue());
+        } else {
+            carSprite.increaseVelocity(0d, -0.6d);
+            if (carSprite.getVelocityY() <= 0) {
+                carSprite.setVelocity(carSprite.getVelocityX(), 0d);
+            }
+            //System.out.println("Speed: " + carSprite.getVelocityY().intValue());
+        }
+
+        if (input.contains("DOWN")) {
+            carSprite.increaseVelocity(0d, -1.1d);
+            if (carSprite.getVelocityY() <= 0) {
+                carSprite.setVelocity(carSprite.getVelocityX(), 0d);
+            }
+        }
         if (input.contains("SPACE"))
             System.out.println("Disparar... ");
 
@@ -189,20 +220,6 @@ public class Game extends Application {
         carSprite = new Car("Rojo");
         carSprite.setImage("/res/car.png", 100, 100);
         carSprite.setPosition(400.0, 500.0);
-    }
-
-    private void handleKeyEvent(KeyEvent event) {
-        String type = event.getEventType().getName();
-        KeyCode keyCode = event.getCode();
-
-        System.out.println(type + ": KeyCode=" + keyCode.getName() + ", Text=" + event.getText());
-
-        if (event.getEventType() == KeyEvent.KEY_PRESSED) {
-            switch (event.getCode()) {
-                case W -> pos += 200;
-                case S -> pos -= 200;
-            }
-        }
     }
 
     private void getTrack() {
