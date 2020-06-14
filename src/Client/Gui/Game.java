@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
@@ -164,7 +165,11 @@ public class Game extends Application {
             }
         };
 
-        getTrack();
+        if (!getTrack())  {
+            System.err.println("[Error] Failed to connect to server.");
+            Platform.exit();
+            return;
+        }
         stage.show();
         timer.start();
     }
@@ -174,12 +179,20 @@ public class Game extends Application {
         lastNanoTime = currentNanoTime;
 
         //game logic
-        if (input.contains("LEFT"))
-            playerX -= carSprite.getVelocityX().intValue();
+        if (input.contains("LEFT")){
 //            carSprite.increaseVelocity(-50.0, 0.0);
-        if (input.contains("RIGHT"))
-            playerX += carSprite.getVelocityX().intValue();
+            if (carSprite.getVelocityY() > 0) {
+                playerX -= carSprite.getVelocityX().intValue();
+            }
+
+        }
+        if (input.contains("RIGHT")) {
 //            carSprite.increaseVelocity(50.0, 0.0);
+            if (carSprite.getVelocityY() > 0) {
+                playerX += carSprite.getVelocityX().intValue();
+            }
+        }
+        playerX += carSprite.getVelocityX().intValue();
         if (input.contains("UP")) {
             carSprite.increaseVelocity(0d, 0.4d);
             if (carSprite.getVelocityY() >= 240d) {
@@ -222,7 +235,7 @@ public class Game extends Application {
         carSprite.setPosition(400.0, 500.0);
     }
 
-    private void getTrack() {
+    private boolean getTrack() {
         ObjectNode request = mapper.createObjectNode();
         request.put("action", "get_track");
 
@@ -231,7 +244,11 @@ public class Game extends Application {
             data = connection.connect(mapper.writeValueAsString(request));
         } catch (JsonProcessingException ex) {
             ex.printStackTrace();
-            return;
+            return false;
+        }
+
+        if (data == null) {
+            return false;
         }
 
         JsonNode response;
@@ -239,13 +256,13 @@ public class Game extends Application {
             response = mapper.readTree(data);
         } catch (JsonProcessingException ex) {
             ex.printStackTrace();
-            return;
+            return false;
         }
 
-        parseTrack(response.get("track"));
+        return parseTrack(response.get("track"));
     }
 
-    private void parseTrack(JsonNode track) {
+    private boolean parseTrack(JsonNode track) {
         Line.setValues(cameraDepth, width, height, roadWidth);
 
         trackLines = new ArrayList<>();
@@ -272,6 +289,7 @@ public class Game extends Application {
         }
 
         lineCount = trackLines.size();
+        return true;
     }
 
     private Float checkInRange(Integer i, JsonNode ranges) {
