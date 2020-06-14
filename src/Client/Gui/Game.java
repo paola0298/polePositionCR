@@ -68,7 +68,7 @@ public class Game extends Application {
 
         loadSprite();
 
-        carSprite.setVelocity(40.0, 0.0);
+        carSprite.setVelocity(0.0, 0.0);
 
         laps = 0;
 
