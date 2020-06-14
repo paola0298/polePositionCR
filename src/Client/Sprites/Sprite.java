@@ -42,6 +42,14 @@ public class Sprite {
         return this.image;
     }
 
+    public Double getPosX() {
+        return this.posX;
+    }
+
+    public Double getPosY() {
+        return this.posY;
+    }
+
     public Integer getWidth() {
         return this.width;
     }
@@ -90,7 +98,7 @@ public class Sprite {
 
     /**
      *
-     * @param time 
+     * @param time tiempo transcurrido
      */
     public void update(Double time) {
         this.posX += this.velocityX * time;
@@ -99,7 +107,7 @@ public class Sprite {
 
     /**
      *
-     * @param gc
+     * @param gc contexto grafico donde dibujar
      */
 
     public void render(GraphicsContext gc) {
@@ -108,7 +116,7 @@ public class Sprite {
 
     /**
      *
-     * @return
+     * @return los boundaries del sprite
      */
     public Rectangle2D getBoundary() {
         return new Rectangle2D(this.posX, this.posY, this.width, this.height);
@@ -116,8 +124,8 @@ public class Sprite {
 
     /**
      *
-     * @param s
-     * @return
+     * @param s otra sprite
+     * @return si intersecan
      */
     public Boolean intersects(Sprite s) {
         return s.getBoundary().intersects( this.getBoundary() );
@@ -125,7 +133,7 @@ public class Sprite {
 
     /**
      *
-     * @return
+     * @return representación en string del sprite
      */
     public String toString()
     {
