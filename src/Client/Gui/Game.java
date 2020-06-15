@@ -7,6 +7,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import eu.hansolo.medusa.Gauge;
+import eu.hansolo.medusa.skins.*;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -14,6 +16,7 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Skin;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
@@ -47,6 +50,7 @@ public class Game extends Application {
     private Scene scene;
     private Car carSprite;
     private Integer laps;
+    private Gauge gauge;
 
     @Override
     public void start(Stage stage) {
@@ -60,7 +64,10 @@ public class Game extends Application {
         stage.setScene(scene);
 
         Canvas canvas = new Canvas(width, height);
-        root.getChildren().add(canvas);
+        
+        loadSpeedometer();
+        
+        root.getChildren().addAll(canvas, gauge);
 
         prepareActionHandlers();
 
@@ -157,6 +164,7 @@ public class Game extends Application {
                 Double speed = carSprite.getVelocityY() * 0.7d;
                 context.fillText(String.format("SPEED: %.1f KPH", speed), 100d, 100d);
                 context.fillText("LAPS: " + laps, 100d, 120d);
+                gauge.setValue(speed);
 
                 carSprite.render(context);
             }
@@ -169,6 +177,24 @@ public class Game extends Application {
         }
 
         stage.show();
+    }
+
+    private void loadSpeedometer() {
+        gauge = new Gauge();
+        gauge.setSkin(new SpaceXSkin(gauge));
+        gauge.setUnit("km / h");
+        gauge.setUnitColor(Color.BLACK);
+        gauge.setDecimals(0);
+        gauge.setValue(0d); //deafult position of needle on gauage
+        gauge.setAnimated(true);
+        gauge.setThresholdColor(Color.RED);  //color will become red if it crosses thereshold value
+        gauge.setThreshold(168);
+        gauge.setMinValue(0d);
+        gauge.setMaxValue(200d);
+
+        gauge.setLayoutX(800);
+        gauge.setLayoutY(400);
+        gauge.setPrefSize(200, 200);
     }
 
     private void manageInput() {
