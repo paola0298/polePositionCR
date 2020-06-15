@@ -1,9 +1,9 @@
 package Client.Logic;
 
-public class Game {
+public class GameInfo {
     private Double time;
 
-    public Game() {
+    public GameInfo() {
         this.time = 0.0;
     }
 
