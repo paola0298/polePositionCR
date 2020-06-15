@@ -33,3 +33,10 @@
     -fx-stroke-width: 1;
 }
 
+.text-game {
+    -fx-font: 40px Tahoma;
+    -fx-fill: #111111;
+    -fx-stroke: #111111;
+    -fx-stroke-width: 1;
+}
+

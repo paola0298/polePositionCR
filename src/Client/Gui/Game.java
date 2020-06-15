@@ -17,9 +17,13 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Skin;
+import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 
 public class Game extends Application {
@@ -51,6 +55,8 @@ public class Game extends Application {
     private Car carSprite;
     private Integer laps;
     private Gauge gauge;
+    private final String cwd = System.getProperty("user.dir");
+    private Text lapsLives;
 
     @Override
     public void start(Stage stage) {
@@ -58,26 +64,33 @@ public class Game extends Application {
         connection = new Connection("localhost", 8080);
 
         stage.setTitle("Pole Position CR");
-
         Group root = new Group();
         scene = new Scene(root);
         stage.setScene(scene);
 
         Canvas canvas = new Canvas(width, height);
-        
-        loadSpeedometer();
-        
-        root.getChildren().addAll(canvas, gauge);
-
-        prepareActionHandlers();
-
         context = canvas.getGraphicsContext2D();
-
+        laps = 0;
+        loadSpeedometer();
+        prepareActionHandlers();
         loadSprite();
-
         carSprite.setVelocity(0.0, 0.0);
 
-        laps = 0;
+        Text textLives = new Text("Vidas: 3"); // TODO cuando se cree el jugador, obtener las vidas del jugador actual
+        textLives.setLayoutX(850);
+        textLives.setLayoutY(50);
+        textLives.getStyleClass().add("text-game");
+
+        lapsLives = new Text("Vueltas " + laps + "/3");
+        lapsLives.setLayoutX(20);
+        lapsLives.setLayoutY(50);
+        lapsLives.getStyleClass().add("text-game");
+
+        Image backgound = imageLoader(cwd.replaceAll("\\\\", "/") + "/res/mountain.png", 340d, 1024d);
+
+        root.getChildren().addAll(canvas, gauge, textLives, lapsLives);
+
+        scene.getStylesheets().add("file:///" + cwd.replaceAll("\\\\", "/") + "/res/style.css");
 
         new AnimationTimer() {
             @Override
@@ -162,11 +175,15 @@ public class Game extends Application {
                 context.setFill(Color.BLACK);
 
                 Double speed = carSprite.getVelocityY() * 0.7d;
-                context.fillText(String.format("SPEED: %.1f KPH", speed), 100d, 100d);
-                context.fillText("LAPS: " + laps, 100d, 120d);
+//                context.fillText(String.format("SPEED: %.1f KPH", speed), 100d, 100d);
+//                context.fillText("LAPS: " + laps, 100d, 120d);
+//                context.setLineWidth(100d);
+//                context.fillText("Vidas: 3", 900d, 50d, 300d);
+                lapsLives.setText("Vueltas " + laps + "/3");
                 gauge.setValue(speed);
-
                 carSprite.render(context);
+                context.drawImage(backgound, 0, 0);
+
             }
         }.start();
 
@@ -177,6 +194,21 @@ public class Game extends Application {
         }
 
         stage.show();
+    }
+
+    /**
+     * @param path Ruta de la imagen
+     * @return El objeto de la imagen creada
+     */
+    private Image imageLoader(String path, Double height, Double width){
+        try{
+            FileInputStream i = new FileInputStream(path);
+            return new Image(i, width, height, false, false);
+        }catch (FileNotFoundException e){
+            System.out.println("Couldn't load images!");
+        }
+        System.out.println("Could not find " + path);
+        return null;
     }
 
     private void loadSpeedometer() {
@@ -249,7 +281,7 @@ public class Game extends Application {
         scene.setOnKeyReleased(keyEvent -> input.remove(keyEvent.getCode().toString()));
     }
 
-    private void loadSprite() {
+    private void loadSprite() { //TODO cargar al jugador
         carSprite = new Car("Rojo");
         carSprite.setImage("/res/car.png", 100, 100);
         carSprite.setPosition(400.0, 500.0);
