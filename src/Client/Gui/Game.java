@@ -30,7 +30,7 @@ public class Game extends Application {
     private final Integer width = 1024;
     private final Integer height = 668;
 
-    Integer roadWidth = 1000;
+    Integer roadWidth = 1500;
     Integer segmentLength = 200;
     Integer camDefaultHeight = 1200;
     Float cameraDepth = 0.84f;
@@ -172,6 +172,14 @@ public class Game extends Application {
                     playerX = 3000f;
                 }
 
+                // Verificar cuando el carro se sale de la pista
+                if (!(playerX > -1280d && playerX < 1232d)) {
+                    carSprite.increaseVelocity(0d, -0.6d);
+                    if (carSprite.getVelocityY() <= 0) {
+                        carSprite.setVelocity(carSprite.getVelocityX(), 0d);
+                    }
+                }
+
                 context.setFill(Color.BLACK);
 
                 Double speed = carSprite.getVelocityY() * 0.7d;
@@ -183,6 +191,8 @@ public class Game extends Application {
                 gauge.setValue(speed);
                 carSprite.render(context);
                 context.drawImage(backgound, 0, 0);
+
+                System.out.println("PlayerX position: " + playerX);
 
             }
         }.start();
