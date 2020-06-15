@@ -1,8 +1,10 @@
 package Client.Gui;
 
 import Client.Logic.Connection;
+import Client.Logic.GameController;
 import Client.Logic.Line;
 import Client.Sprites.Car;
+import Client.Sprites.Sprite;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,21 +27,29 @@ import javafx.stage.Stage;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
 
 public class Game extends Application {
-    private final Integer width = 1024;
-    private final Integer height = 668;
+    private Integer width = 1024;
+    private Integer height = 668;
 
-    Integer roadWidth = 1500;
-    Integer segmentLength = 200;
+    private Integer roadWidth = 1500;
+    private Integer segmentLength = 200;
+    private Float cameraDepth = 0.84f;
+
     Integer camDefaultHeight = 1200;
-    Float cameraDepth = 0.84f;
 
     Integer pos = 0;
     Float playerX = 0f;
 
-    private ArrayList<Line> trackLines;
     private Integer lineCount;
+    private ArrayList<Line> trackLines;
+    //TODO: recuperar obstaculos del servidor.
+    private ArrayList<Sprite> obstacles;
+    //TODO: recuperar jugadores del servidor.
+    private ArrayList<Sprite> players;
+    //TODO: recuperar power-ups del servidor.
+    private ArrayList<Sprite> powerUps;
 
     private final Color grass = Color.rgb(68, 157, 15);
     private final Color trackBorder1 = Color.rgb(224, 224, 224);
@@ -47,21 +57,30 @@ public class Game extends Application {
     private final Color track = Color.rgb(67, 81, 81);
 
     private GraphicsContext context;
-    private ObjectMapper mapper;
-    private Connection connection;
 
     private ArrayList<String> input;
+
     private Scene scene;
     private Car carSprite;
-    private Integer laps;
+    private Integer laps = 0;
     private Gauge gauge;
-    private final String cwd = System.getProperty("user.dir");
     private Text lapsLives;
+    private Image background;
+    private AnimationTimer gameLoop;
+
+    private GameController controller;
+    private final String cwd = System.getProperty("user.dir");
 
     @Override
     public void start(Stage stage) {
-        mapper = new ObjectMapper();
-        connection = new Connection("localhost", 8080);
+        controller = GameController.getInstance();
+        controller.setGame(this);
+        controller.setValues(segmentLength);
+
+        //Hacer en la petición al servidor
+        obstacles = new ArrayList<>();
+        players = new ArrayList<>();
+        powerUps = new ArrayList<>();
 
         stage.setTitle("Pole Position CR");
         Group root = new Group();
@@ -70,7 +89,6 @@ public class Game extends Application {
 
         Canvas canvas = new Canvas(width, height);
         context = canvas.getGraphicsContext2D();
-        laps = 0;
         loadSpeedometer();
         prepareActionHandlers();
         loadSprite();
@@ -86,13 +104,28 @@ public class Game extends Application {
         lapsLives.setLayoutY(50);
         lapsLives.getStyleClass().add("text-game");
 
-        Image backgound = imageLoader(cwd.replaceAll("\\\\", "/") + "/res/mountain.png", 340d, 1024d);
+        background = imageLoader(cwd.replaceAll("\\\\", "/") + "/res/mountain.png", 340d, 1024d);
 
         root.getChildren().addAll(canvas, gauge, textLives, lapsLives);
 
         scene.getStylesheets().add("file:///" + cwd.replaceAll("\\\\", "/") + "/res/style.css");
 
-        new AnimationTimer() {
+        this.trackLines = controller.getTrack();
+
+        if (trackLines == null) {
+            Platform.exit();
+            return;
+        }
+        lineCount = trackLines.size();
+
+        Line.setValues(cameraDepth, width, height, roadWidth);
+        configureGameLoop();
+        gameLoop.start();
+        stage.show();
+    }
+
+    public void configureGameLoop() {
+        gameLoop = new AnimationTimer() {
             @Override
             public void handle(long l) {
                 context.clearRect(0,0,width, height);
@@ -110,7 +143,7 @@ public class Game extends Application {
 
                 Integer startpos = (pos / segmentLength);
 
-                manageInput();
+                manageInput(input);
 
                 Float x = 0f, dx = 0f;
                 Double maxY = height.doubleValue();
@@ -120,6 +153,7 @@ public class Game extends Application {
 
                 pos += carSprite.getVelocityY().intValue();
 
+                //Se dibuja la pista, bordes y pasto
                 for (Integer n = startpos; n < startpos + 300; n++) {
                     Line line = trackLines.get(n % lineCount);
 
@@ -149,6 +183,9 @@ public class Game extends Application {
                     Double prevTrackWidth = (prev.W * 1.3d);
                     Double trackWidth = (line.W * 1.3d);
 
+                    Double middleLinePrev = prev.W * 0.05;
+                    Double middleLine = line.W * 0.05;
+
                     if ((n/3) % 2 == 0) {
                         drawPolygon(trackBorder1, prev.X.intValue(), prev.Y.intValue(), prevTrackWidth.intValue(), line.X.intValue(), line.Y.intValue(), trackWidth.intValue());
                     } else {
@@ -157,6 +194,20 @@ public class Game extends Application {
 
                     //Dibujar pista
                     drawPolygon(track, prev.X.intValue(), prev.Y.intValue(), prev.W.intValue(), line.X.intValue(), line.Y.intValue(), line.W.intValue());
+
+                    if ((n / 3) % 2 == 0) {
+                        drawPolygon(Color.WHITE, prev.X.intValue(), prev.Y.intValue(), middleLinePrev.intValue(), line.X.intValue(), line.Y.intValue(), middleLine.intValue());
+                    }
+                }
+
+                //TODO: renderizar los demás sprites
+                for (Integer i = 0; i < players.size(); i++) {
+
+                }
+                for (Integer i = 0; i < obstacles.size(); i++) {
+
+                }
+                for (Integer i = 0; i < powerUps.size(); i++) {
 
                 }
 
@@ -173,75 +224,22 @@ public class Game extends Application {
                 }
 
                 // Verificar cuando el carro se sale de la pista
-                if (!(playerX > -1280d && playerX < 1232d)) {
-                    carSprite.increaseVelocity(0d, -0.6d);
-                    if (carSprite.getVelocityY() <= 0) {
-                        carSprite.setVelocity(carSprite.getVelocityX(), 0d);
-                    }
+                if (!(playerX > -1280d && playerX < 1232d) && (carSprite.getVelocityY() > 70d)) {
+                        carSprite.increaseVelocity(0d, -0.9d);
                 }
 
-                context.setFill(Color.BLACK);
-
                 Double speed = carSprite.getVelocityY() * 0.7d;
-//                context.fillText(String.format("SPEED: %.1f KPH", speed), 100d, 100d);
-//                context.fillText("LAPS: " + laps, 100d, 120d);
-//                context.setLineWidth(100d);
-//                context.fillText("Vidas: 3", 900d, 50d, 300d);
                 lapsLives.setText("Vueltas " + laps + "/3");
                 gauge.setValue(speed);
                 carSprite.render(context);
-                context.drawImage(backgound, 0, 0);
+                context.drawImage(background, 0, 0);
 
-                System.out.println("PlayerX position: " + playerX);
-
+                //TODO: mandar estado del jugador al servidor para actualizarlo
             }
-        }.start();
-
-        if (!getTrack())  {
-            System.err.println("[Error] Failed to connect to server.");
-            Platform.exit();
-            return;
-        }
-
-        stage.show();
+        };
     }
 
-    /**
-     * @param path Ruta de la imagen
-     * @return El objeto de la imagen creada
-     */
-    private Image imageLoader(String path, Double height, Double width){
-        try{
-            FileInputStream i = new FileInputStream(path);
-            return new Image(i, width, height, false, false);
-        }catch (FileNotFoundException e){
-            System.out.println("Couldn't load images!");
-        }
-        System.out.println("Could not find " + path);
-        return null;
-    }
-
-    private void loadSpeedometer() {
-        gauge = new Gauge();
-        gauge.setSkin(new SpaceXSkin(gauge));
-        gauge.setUnit("km / h");
-        gauge.setUnitColor(Color.BLACK);
-        gauge.setDecimals(0);
-        gauge.setValue(0d); //deafult position of needle on gauage
-        gauge.setAnimated(true);
-        gauge.setThresholdColor(Color.RED);  //color will become red if it crosses thereshold value
-        gauge.setThreshold(168);
-        gauge.setMinValue(0d);
-        gauge.setMaxValue(200d);
-
-        gauge.setLayoutX(800);
-        gauge.setLayoutY(400);
-        gauge.setPrefSize(200, 200);
-    }
-
-    private void manageInput() {
-
-        //game logic
+    public void manageInput(ArrayList<String> input) {
         if (input.contains("LEFT")){
             if (carSprite.getVelocityY() > 0) {
                 carSprite.setVelocity(-40d, carSprite.getVelocityY());
@@ -278,7 +276,39 @@ public class Game extends Application {
 
         if (input.contains("SPACE"))
             System.out.println("Disparar... ");
+    }
 
+    /**
+     * @param path Ruta de la imagen
+     * @return El objeto de la imagen creada
+     */
+    private Image imageLoader(String path, Double height, Double width){
+        try{
+            FileInputStream i = new FileInputStream(path);
+            return new Image(i, width, height, false, false);
+        }catch (FileNotFoundException e){
+            System.out.println("Couldn't load images!");
+        }
+        System.out.println("Could not find " + path);
+        return null;
+    }
+
+    private void loadSpeedometer() {
+        gauge = new Gauge();
+        gauge.setSkin(new SpaceXSkin(gauge));
+        gauge.setUnit("km / h");
+        gauge.setUnitColor(Color.BLACK);
+        gauge.setDecimals(0);
+        gauge.setValue(0d); //deafult position of needle on gauage
+        gauge.setAnimated(true);
+        gauge.setThresholdColor(Color.RED);  //color will become red if it crosses thereshold value
+        gauge.setThreshold(168);
+        gauge.setMinValue(0d);
+        gauge.setMaxValue(200d);
+
+        gauge.setLayoutX(800);
+        gauge.setLayoutY(400);
+        gauge.setPrefSize(200, 200);
     }
 
     private void prepareActionHandlers() {
@@ -295,77 +325,6 @@ public class Game extends Application {
         carSprite = new Car("Rojo");
         carSprite.setImage("/res/car.png", 100, 100);
         carSprite.setPosition(400.0, 500.0);
-    }
-
-    private boolean getTrack() {
-        ObjectNode request = mapper.createObjectNode();
-        request.put("action", "get_track");
-
-        String data;
-        try {
-            data = connection.connect(mapper.writeValueAsString(request));
-        } catch (JsonProcessingException ex) {
-            ex.printStackTrace();
-            return false;
-        }
-
-        if (data == null) {
-            return false;
-        }
-
-        JsonNode response;
-        try {
-            response = mapper.readTree(data);
-        } catch (JsonProcessingException ex) {
-            ex.printStackTrace();
-            return false;
-        }
-
-        return parseTrack(response.get("track"));
-    }
-
-    private boolean parseTrack(JsonNode track) {
-        Line.setValues(cameraDepth, width, height, roadWidth);
-
-        trackLines = new ArrayList<>();
-
-
-        Integer length = track.get("length").asInt();
-        System.out.println(track.toPrettyString());
-
-        JsonNode curves = track.get("curves");
-
-        for (Integer i = 0; i < length; i++) {
-            Line line = new Line();
-            line.z = i * segmentLength.floatValue();
-
-            line.curve = checkInRange(i, curves);
-
-            //Usar para cuestas
-//            if (i > 700) {
-//                Double value = Math.sin(i / 30.0);
-//                line.y = value.floatValue() * camDefaultHeight;
-//            }
-
-            trackLines.add(line);
-        }
-
-        lineCount = trackLines.size();
-        return true;
-    }
-
-    private Float checkInRange(Integer i, JsonNode ranges) {
-        for (JsonNode curve : ranges) {
-            Integer from = curve.get("from").asInt();
-            Integer to = curve.get("to").asInt();
-
-            if (from <= i && i < to) {
-                Double intensity = curve.get("intensity").asDouble();
-                return intensity.floatValue();
-            }
-        }
-
-        return 0f;
     }
 
     private void drawPolygon(Color color, Integer x1, Integer y1, Integer w1, Integer x2, Integer y2, Integer w2) {
@@ -386,6 +345,6 @@ public class Game extends Application {
     }
 
     public static void main(String[] args) {
-        launch();
+        launch(Game.class);
     }
 }
