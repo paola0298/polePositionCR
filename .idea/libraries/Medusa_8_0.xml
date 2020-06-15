@@ -2,6 +2,7 @@
   <library name="Medusa-8.0">
     <CLASSES>
       <root url="jar://$PROJECT_DIR$/../Medusa-8.0.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/medusa.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
