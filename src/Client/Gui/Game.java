@@ -1,16 +1,12 @@
 package Client.Gui;
 
-import Client.Logic.Connection;
 import Client.Logic.GameController;
 import Client.Logic.Line;
+import Client.Logic.Player;
 import Client.Sprites.Car;
 import Client.Sprites.Sprite;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import eu.hansolo.medusa.Gauge;
-import eu.hansolo.medusa.skins.*;
+import eu.hansolo.medusa.skins.SpaceXSkin;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -18,7 +14,6 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Skin;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
@@ -27,7 +22,6 @@ import javafx.stage.Stage;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.concurrent.CountDownLatch;
 
 public class Game extends Application {
     private Integer width = 1024;
@@ -47,7 +41,7 @@ public class Game extends Application {
     //TODO: recuperar obstaculos del servidor.
     private ArrayList<Sprite> obstacles;
     //TODO: recuperar jugadores del servidor.
-    private ArrayList<Sprite> players;
+    private ArrayList<Player> players;
     //TODO: recuperar power-ups del servidor.
     private ArrayList<Sprite> powerUps;
 
@@ -57,11 +51,10 @@ public class Game extends Application {
     private final Color track = Color.rgb(67, 81, 81);
 
     private GraphicsContext context;
-
     private ArrayList<String> input;
-
     private Scene scene;
-    private Car carSprite;
+//    private Car carSprite;
+    private Player actualPlayer;
     private Integer laps = 0;
     private Gauge gauge;
     private Text lapsLives;
@@ -76,6 +69,8 @@ public class Game extends Application {
         controller = GameController.getInstance();
         controller.setGame(this);
         controller.setValues(segmentLength);
+
+        controller.addPlayer(pos, playerX.intValue(), controller.getActualColorCar(), 3);
 
         //Hacer en la petición al servidor
         obstacles = new ArrayList<>();
@@ -92,7 +87,8 @@ public class Game extends Application {
         loadSpeedometer();
         prepareActionHandlers();
         loadSprite();
-        carSprite.setVelocity(0.0, 0.0);
+        actualPlayer.getCarSelected().setVelocity(0d, 0d);
+//        carSprite.setVelocity(0.0, 0.0);
 
         Text textLives = new Text("Vidas: 3"); // TODO cuando se cree el jugador, obtener las vidas del jugador actual
         textLives.setLayoutX(850);
@@ -151,7 +147,8 @@ public class Game extends Application {
                 //Para cuestas
 //                Integer camHeight = camDefaultHeight + trackLines.get(startpos).y.intValue();
 
-                pos += carSprite.getVelocityY().intValue();
+//                pos += carSprite.getVelocityY().intValue();
+                pos += actualPlayer.getCarSelected().getVelocityY().intValue();
 
                 //Se dibuja la pista, bordes y pasto
                 for (Integer n = startpos; n < startpos + 300; n++) {
@@ -202,6 +199,41 @@ public class Game extends Application {
 
                 //TODO: renderizar los demás sprites
                 for (Integer i = 0; i < players.size(); i++) {
+                    Player actual = players.get(i);
+                    System.out.println("Color del carro " + actual.getCarSelected().getCarColor());
+                    System.out.println("Color del carro del jugador actual " + controller.getActualColorCar());
+                    System.out.println(actual.getCarSelected().getCarColor().equals(controller.getActualColorCar()));
+                    if (actual.getCarSelected().getCarColor().equals(controller.getActualColorCar())) {
+                        System.out.println("Carro actual");
+                    } else {
+                        Double posX = 0d;
+                        Double posY = 0d;
+                        switch (i) {
+                            case 0 -> {
+                                posX = 250d;
+                                posY = 500d;
+                            }
+                            case 1 -> {
+                                posX = 600d;
+                                posY = 400d;
+                            }
+                            case 2 -> {
+                                posX = 250d;
+                                posY = 400d;
+                            }
+                        }
+
+                        String path = "";
+                        switch (actual.getCarSelected().getCarColor()) {
+                            case "Rojo" -> path = "/res/CarroRojo.png";
+                            case "Morado" -> path =  "/res/CarroMorado.png";
+                            case "Blanco" -> path =  "/res/CarroBlanco.png";
+                            case "Azul" -> path =  "/res/CarroAzul.png";
+                        }
+                        actual.getCarSelected().setPosition(posX, posY);
+                        actual.getCarSelected().setImage(path, 100, 100);
+                        actual.getCarSelected().render(context);
+                    }
 
                 }
                 for (Integer i = 0; i < obstacles.size(); i++) {
@@ -213,7 +245,8 @@ public class Game extends Application {
 
                 //Para que el carro se salga en las curvas.
                 Line currentLine = trackLines.get(startpos % lineCount);
-                Float curve = ((currentLine.curve * -1f) / 20f) * carSprite.getVelocityY().floatValue();
+//                Float curve = ((currentLine.curve * -1f) / 20f) * carSprite.getVelocityY().floatValue();
+                Float curve = ((currentLine.curve * -1f) / 20f) * actualPlayer.getCarSelected().getVelocityY().floatValue();
                 playerX += curve;
 
                 //Limita que tan lejos se puede desviar el jugador
@@ -224,53 +257,54 @@ public class Game extends Application {
                 }
 
                 // Verificar cuando el carro se sale de la pista
-                if (!(playerX > -1280d && playerX < 1232d) && (carSprite.getVelocityY() > 70d)) {
-                        carSprite.increaseVelocity(0d, -0.9d);
+                if (!(playerX > -1280d && playerX < 1232d) && (actualPlayer.getCarSelected().getVelocityY() > 70d)) {
+                    actualPlayer.getCarSelected().increaseVelocity(0d, -0.9d);
                 }
 
-                Double speed = carSprite.getVelocityY() * 0.7d;
+                Double speed = actualPlayer.getCarSelected().getVelocityY() * 0.7d;
                 lapsLives.setText("Vueltas " + laps + "/3");
                 gauge.setValue(speed);
-                carSprite.render(context);
+                actualPlayer.getCarSelected().render(context);
                 context.drawImage(background, 0, 0);
 
                 //TODO: mandar estado del jugador al servidor para actualizarlo
+                players = controller.getPlayerList();
             }
         };
     }
 
     public void manageInput(ArrayList<String> input) {
         if (input.contains("LEFT")){
-            if (carSprite.getVelocityY() > 0) {
-                carSprite.setVelocity(-40d, carSprite.getVelocityY());
-                playerX += carSprite.getVelocityX().intValue();
+            if (actualPlayer.getCarSelected().getVelocityY() > 0) {
+                actualPlayer.getCarSelected().setVelocity(-40d, actualPlayer.getCarSelected().getVelocityY());
+                playerX += actualPlayer.getCarSelected().getVelocityX().intValue();
 
             }
         }
 
         if (input.contains("RIGHT")) {
-            if (carSprite.getVelocityY() > 0) {
-                carSprite.setVelocity(40d, carSprite.getVelocityY());
-                playerX += carSprite.getVelocityX().intValue();
+            if (actualPlayer.getCarSelected().getVelocityY() > 0) {
+                actualPlayer.getCarSelected().setVelocity(40d, actualPlayer.getCarSelected().getVelocityY());
+                playerX += actualPlayer.getCarSelected().getVelocityX().intValue();
             }
         }
 
         if (input.contains("UP")) {
-            carSprite.increaseVelocity(0d, 0.4d);
-            if (carSprite.getVelocityY() >= 240d) {
-                carSprite.setVelocity(carSprite.getVelocityX(), 240d);
+            actualPlayer.getCarSelected().increaseVelocity(0d, 0.4d);
+            if (actualPlayer.getCarSelected().getVelocityY() >= 240d) {
+                actualPlayer.getCarSelected().setVelocity(actualPlayer.getCarSelected().getVelocityX(), 240d);
             }
         } else {
-            carSprite.increaseVelocity(0d, -0.6d);
-            if (carSprite.getVelocityY() <= 0) {
-                carSprite.setVelocity(carSprite.getVelocityX(), 0d);
+            actualPlayer.getCarSelected().increaseVelocity(0d, -0.6d);
+            if (actualPlayer.getCarSelected().getVelocityY() <= 0) {
+                actualPlayer.getCarSelected().setVelocity(actualPlayer.getCarSelected().getVelocityX(), 0d);
             }
         }
 
         if (input.contains("DOWN")) {
-            carSprite.increaseVelocity(0d, -1.1d);
-            if (carSprite.getVelocityY() <= 0) {
-                carSprite.setVelocity(carSprite.getVelocityX(), 0d);
+            actualPlayer.getCarSelected().increaseVelocity(0d, -1.1d);
+            if (actualPlayer.getCarSelected().getVelocityY() <= 0) {
+                actualPlayer.getCarSelected().setVelocity(actualPlayer.getCarSelected().getVelocityX(), 0d);
             }
         }
 
@@ -322,9 +356,18 @@ public class Game extends Application {
     }
 
     private void loadSprite() { //TODO cargar al jugador
-        carSprite = new Car("Rojo");
-        carSprite.setImage("/res/car.png", 100, 100);
-        carSprite.setPosition(400.0, 500.0);
+        String colorCar = controller.getActualColorCar();
+        String path = "";
+        Car carSprite = new Car(colorCar);
+        switch (colorCar) {
+            case "Rojo" -> path = "/res/CarroRojo.png";
+            case "Morado" -> path =  "/res/CarroMorado.png";
+            case "Blanco" -> path =  "/res/CarroBlanco.png";
+            case "Azul" -> path =  "/res/CarroAzul.png";
+        }
+        carSprite.setImage(path, 100, 100);
+        carSprite.setPosition(600.0, 500.0);
+        actualPlayer = new Player(carSprite);
     }
 
     private void drawPolygon(Color color, Integer x1, Integer y1, Integer w1, Integer x2, Integer y2, Integer w2) {

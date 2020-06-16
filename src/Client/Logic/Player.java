@@ -6,6 +6,8 @@ public class Player {
     private Integer lives;
     private Integer points;
     private Car carSelected;
+    private Integer pos;
+    private Integer playerX;
 
     public Player(Car car) {
         this.lives = 3;
@@ -19,6 +21,10 @@ public class Player {
      */
     public Integer getLives() {
         return lives;
+    }
+
+    public void setLives(Integer lives) {
+        this.lives = lives;
     }
 
     /**
@@ -62,5 +68,21 @@ public class Player {
      */
     public void setCarSelected(Car carSelected) {
         this.carSelected = carSelected;
+    }
+
+    public Integer getPos() {
+        return pos;
+    }
+
+    public void setPos(Integer pos) {
+        this.pos = pos;
+    }
+
+    public Integer getPlayerX() {
+        return playerX;
+    }
+
+    public void setPlayerX(Integer playerX) {
+        this.playerX = playerX;
     }
 }

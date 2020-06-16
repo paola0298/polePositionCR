@@ -20,6 +20,8 @@ public class GameController {
 
     private static GameController instance;
 
+    private String actualCarColor;
+
     public GameController() {
         mapper = new ObjectMapper();
         connection = new Connection("localhost", 8080);
@@ -75,6 +77,7 @@ public class GameController {
      * @param carColor Color del carro utilizado
      */
     public void setAvailableCars(String carColor) {
+        actualCarColor = carColor;
         ObjectNode request = mapper.createObjectNode();
         request.put("carColor", carColor);
         request.put("action", "set_cars");
@@ -86,9 +89,69 @@ public class GameController {
         }
     }
 
-//    public Integer getActualPlayers() {
-//        return 2;
-//    }
+    public String getActualColorCar() {
+        return actualCarColor;
+    }
+
+    public void addPlayer(Integer pos, Integer playerX, String carColor, Integer lives) {
+        ObjectNode request = mapper.createObjectNode();
+        request.put("action", "add_player");
+        request.put("pos", pos);
+        request.put("playerX", playerX);
+        request.put("carColor", carColor);
+        request.put("lives", lives);
+
+        try {
+            connection.connect(mapper.writeValueAsString(request));
+        } catch (JsonProcessingException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public ArrayList<Player> getPlayerList() {
+        ObjectNode request = mapper.createObjectNode();
+        request.put("action", "get_players");
+
+        String data;
+        try {
+            data = connection.connect(mapper.writeValueAsString(request));
+        } catch (JsonProcessingException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+
+        if (data == null)
+            return null;
+
+        JsonNode response;
+        try {
+            response = mapper.readTree(data);
+        } catch (JsonProcessingException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+
+        return getPlayersArray(response.get("players"));
+    }
+
+    private ArrayList<Player> getPlayersArray(JsonNode players) {
+        ArrayList<Player> playersL = new ArrayList<>();
+        for (JsonNode player : players) {
+            Integer pos = player.get("pos").asInt();
+            Integer playerX = player.get("playerX").asInt();
+            Integer lives = player.get("lives").asInt();
+            String carColor = player.get("carColor").textValue();
+
+            Player playerObject = new Player(new Car(carColor));
+            playerObject.setLives(lives);
+            playerObject.setPlayerX(playerX);
+            playerObject.setPos(pos);
+
+            playersL.add(playerObject);
+        }
+
+        return playersL;
+    }
 
     public void setValues(Integer segmentLength) {
         this.segmentLength = segmentLength;

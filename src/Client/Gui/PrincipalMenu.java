@@ -75,7 +75,6 @@ public class PrincipalMenu extends Application {
     /**
      * Carga el menu de seleccion de los carros
      */
-
     private void initCarSelection() {
         AtomicReference<Boolean> flag = new AtomicReference<>(true);
         carMenuWindow = new VBox();
@@ -107,8 +106,8 @@ public class PrincipalMenu extends Application {
             colorCar.setOnMouseExited(mouseEvent -> finalColorCar.setEffect(null));
             colorCar.setOnMouseClicked(mouseEvent -> {
                 System.out.println("Carro " + car + " seleccionado");
-//                Player actualPlayer = new Player();
                 controller.setAvailableCars(car);
+
                 Stage stage = (Stage) finalColorCar.getScene().getWindow();
                 stage.close();
                 Game.show();
@@ -153,8 +152,14 @@ public class PrincipalMenu extends Application {
         return addTokenImage;
     }
 
+    /**
+     *
+     * @param tokenImage Objeto Imagen a agregar
+     * @param height Altura de la imagen
+     * @param width Ancho de la imagen
+     * @return Un objeto ImageView de la imagen agregada
+     */
     private ImageView loadImageView(Image tokenImage, Integer height, Integer width){
-//        Image tokenImage = imageLoader(cwd.replaceAll("\\\\", "/") + path);
         ImageView addTokenImage = new ImageView(tokenImage);
         addTokenImage.setFitHeight(height);
         addTokenImage.setFitWidth(width);
