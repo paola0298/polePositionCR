@@ -25,6 +25,71 @@ public class GameController {
         connection = new Connection("localhost", 8080);
     }
 
+    /**
+     * Metodo para mostrarle al jugador actual los colores de carros disponibles
+     * @return Devuelve una lista con los colores disponibles
+     */
+    public ArrayList<String> getAvailableCars() {
+        ObjectNode request = mapper.createObjectNode();
+        request.put("action", "get_cars");
+
+        String data;
+        try {
+            data = connection.connect(mapper.writeValueAsString(request));
+        } catch (JsonProcessingException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+
+        if (data == null)
+            return null;
+
+        JsonNode response;
+        try {
+            response = mapper.readTree(data);
+        } catch (JsonProcessingException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+
+        return parseResponse(response.get("cars"));
+    }
+
+    /**
+     * Metodo para convertir el string recibido a un arrayList
+     * @param cars String recibido del servidor
+     * @return ArrayList con los carros disponibles
+     */
+    private ArrayList<String> parseResponse(JsonNode cars) {
+        ArrayList<String> carsA = new ArrayList<>();
+        JsonNode array_cars = cars.get("array_cars");
+        for (JsonNode car : array_cars) {
+//            System.out.println("Carro " + car.textValue());
+            carsA.add(car.textValue());
+        }
+        return carsA;
+    }
+
+    /**
+     * Funcion para enviar al servidor que un carro se utilizo
+     * @param carColor Color del carro utilizado
+     */
+    public void setAvailableCars(String carColor) {
+        ObjectNode request = mapper.createObjectNode();
+        request.put("carColor", carColor);
+        request.put("action", "set_cars");
+
+        try {
+            connection.connect(mapper.writeValueAsString(request));
+        } catch (JsonProcessingException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+//    public Integer getActualPlayers() {
+//        return 2;
+//    }
+
     public void setValues(Integer segmentLength) {
         this.segmentLength = segmentLength;
     }

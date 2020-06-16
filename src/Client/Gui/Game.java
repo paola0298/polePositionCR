@@ -344,7 +344,10 @@ public class Game extends Application {
         context.fillPolygon(pointsX, pointsY, 4);
     }
 
-    public static void main(String[] args) {
-        launch(Game.class);
+//    public static void main(String[] args) {
+//        launch(Game.class);
+//    }
+    public static void show() {
+        new Game().start(new Stage());
     }
 }

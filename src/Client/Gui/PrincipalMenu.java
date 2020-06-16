@@ -1,8 +1,8 @@
 package Client.Gui;
 
-import Client.Logic.Player;
-import Client.Sprites.Car;
+import Client.Logic.GameController;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -17,21 +17,25 @@ import javafx.stage.Stage;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class PrincipalMenu extends Application {
 
     private final String cwd = System.getProperty("user.dir");
     private VBox menuWindow; // Ventana del menu principal
     private VBox carMenuWindow; // Venta donde se elige el auto
+    private StackPane mainLayout;
+    private GameController controller;
 
     @Override
     public void start(Stage stage) throws Exception {
-        StackPane mainLayout = new StackPane();
+        controller = GameController.getInstance();
+        mainLayout = new StackPane();
 
         init_Menu();
-        initCarSelection();
 
-        mainLayout.getChildren().addAll(menuWindow, carMenuWindow);
+        mainLayout.getChildren().add(menuWindow);
         Scene scene = new Scene(mainLayout, 750, 450);
         scene.getStylesheets().add("file:///" + cwd.replaceAll("\\\\", "/") + "/res/style.css");
         stage.setTitle("Pole Position CR");
@@ -53,6 +57,8 @@ public class PrincipalMenu extends Application {
         ImageView startButton = loadImageView("/res/startButton.png", 80, 80);
         startButton.setOnMouseClicked(mouseEvent -> {
             System.out.println("Iniciar juego...");
+            initCarSelection();
+            mainLayout.getChildren().add(carMenuWindow);
             carMenuWindow.toFront();
 
         });
@@ -71,6 +77,7 @@ public class PrincipalMenu extends Application {
      */
 
     private void initCarSelection() {
+        AtomicReference<Boolean> flag = new AtomicReference<>(true);
         carMenuWindow = new VBox();
         HBox carArray = new HBox();
 
@@ -80,55 +87,37 @@ public class PrincipalMenu extends Application {
         carArray.setSpacing(40);
         carArray.setAlignment(Pos.BOTTOM_CENTER);
 
-        // TODO obtener la lista de colores disponibles para colocarlos en la ventana
+
+        ArrayList<String> availableCars =  controller.getAvailableCars();
         // TODO actualizar los carros segun la se vayan escogiendo
 
         Text title = new Text("Seleccione un carro");
-
-//        ImageView redCar = loadImageView("/res/redCar.png", 150, 150);
-//        ImageView blueCar = loadImageView("/res/blueCar.png", 150, 150);
-//        ImageView purpleCar = loadImageView("/res/purpleCar.png", 150, 150);
-//        ImageView whiteCar = loadImageView("/res/whiteCar.png", 150, 150);
-//        ImageView[] carArrayS = new ImageView[4];
-//        carArrayS[0] = blueCar;
-//        carArrayS[1] = purpleCar;
-//        carArrayS[2] = redCar;
-//        carArrayS[3] = whiteCar;
-        // TODO recibir array del sprite car e iterarlo para conocer el color del carro
-
-        Car[] arrayOfCars = new Car[4];
-        Car redCar = new Car("Rojo");
-        Car blueCar = new Car("Azul");
-        Car purpleCar = new Car("Morado");
-        Car whiteCar = new Car("Blanco");
-
-        redCar.setImage("/res/redCar.png", 150, 150);
-        blueCar.setImage("/res/blueCar.png", 150, 150);
-        purpleCar.setImage("/res/purpleCar.png", 150, 150);
-        whiteCar.setImage("/res/whiteCar.png", 150, 150);
-
-        arrayOfCars[0] = redCar;
-        arrayOfCars[1] = blueCar;
-        arrayOfCars[2] = purpleCar;
-        arrayOfCars[3] = whiteCar;
-
-
-        for (int i = 0; i < 4; i++) {
-            System.out.println("Agregando carro...");
-            Car tmp = arrayOfCars[i];
-            ImageView tmpIV = loadImageView(tmp.getImage(), tmp.getHeight(), tmp.getWidth());
-            DropShadow shadow = new DropShadow();
-
-            tmpIV.setOnMouseEntered(mouseEvent -> tmpIV.setEffect(shadow));
-            tmpIV.setOnMouseExited(mouseEvent -> tmpIV.setEffect(null));
-            tmpIV.setOnMouseClicked(mouseEvent -> {
-                System.out.println("Carro " + tmp.getCarColor() + " seleccionado");
-                Player actualPlayer = new Player(tmp);
-                // TODO llamar a la ventana principal del juego
+        ImageView colorCar = new ImageView();
+        DropShadow shadow = new DropShadow();
+        Text waiting = new Text("Esperando jugadores");
+        for (String car : availableCars) {
+            switch (car) {
+                case "Azul" -> colorCar = loadImageView("/res/blueCar.png", 150, 150);
+                case "Rojo" -> colorCar = loadImageView("/res/redCar.png", 150, 150);
+                case "Morado" -> colorCar = loadImageView("/res/purpleCar.png", 150, 150);
+                case "Blanco" -> colorCar = loadImageView("/res/whiteCar.png", 150, 150);
+            }
+            ImageView finalColorCar = colorCar;
+            colorCar.setOnMouseEntered(mouseEvent -> finalColorCar.setEffect(shadow));
+            colorCar.setOnMouseExited(mouseEvent -> finalColorCar.setEffect(null));
+            colorCar.setOnMouseClicked(mouseEvent -> {
+                System.out.println("Carro " + car + " seleccionado");
+//                Player actualPlayer = new Player();
+                controller.setAvailableCars(car);
+                Stage stage = (Stage) finalColorCar.getScene().getWindow();
+                stage.close();
+                Game.show();
             });
-            carArray.getChildren().add(tmpIV);
+            carArray.getChildren().add(colorCar);
         }
+
         title.getStyleClass().add("fancytext1");
+        waiting.getStyleClass().add("fancytext1");
         carMenuWindow.getChildren().addAll(title, carArray);
         carMenuWindow.getStyleClass().add("background-car-pane");
 
