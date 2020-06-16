@@ -7,12 +7,23 @@ public class Player {
     private Integer points;
     private Car carSelected;
     private Integer pos;
-    private Integer playerX;
+    private Float playerX;
+    private Double offroadMaxSpeed;
+    private Double maxSpeedNormal;
+    private Double maxSpeedTurbo;
+    private boolean hasTurbo;
 
     public Player(Car car) {
         this.lives = 3;
         this.points = 0;
         this.carSelected = car;
+        this.pos = 0;
+        this.playerX = 0f;
+
+        this.offroadMaxSpeed = 70d;
+        this.maxSpeedNormal = 240d;
+        this.maxSpeedTurbo = 300d;
+        this.hasTurbo = false;
     }
 
     /**
@@ -78,11 +89,62 @@ public class Player {
         this.pos = pos;
     }
 
-    public Integer getPlayerX() {
+    public void manualUpdatePos(Integer update) {
+        this.pos += update;
+    }
+
+    public void updatePos() {
+        this.pos += carSelected.getVelocityY().intValue();
+    }
+
+    public Float getPlayerX() {
         return playerX;
     }
 
-    public void setPlayerX(Integer playerX) {
+    public void setPlayerX(Float playerX) {
         this.playerX = playerX;
+    }
+
+    public void updatePlayerX(Float update) {
+        this.playerX += update;
+    }
+
+    public void updateOffroadSpeedY() {
+        if (carSelected.getVelocityY() > offroadMaxSpeed) {
+            carSelected.increaseVelocity(0d, -0.7d);
+        }
+    }
+
+    public void updateSpeedY(boolean accelerating) {
+        if (accelerating) {
+            var accel = hasTurbo ? 0.65d : 0.4d;
+            carSelected.increaseVelocity(0d, accel);
+        } else {
+            carSelected.increaseVelocity(0d, -0.6d);
+        }
+
+        if (carSelected.getVelocityY() > 240d) {
+            carSelected.setVelocity(carSelected.getVelocityX(), 240d);
+        } else if (carSelected.getVelocityY() < 0d) {
+            carSelected.setVelocity(carSelected.getVelocityX(), 0d);
+        }
+    }
+
+    public void updateBrakingSpeedY() {
+        carSelected.increaseVelocity(0d, -1.1d);
+
+        if (carSelected.getVelocityY() < 0d) {
+            carSelected.setVelocity(carSelected.getVelocityX(), 0d);
+        }
+    }
+
+
+    public void updateSpeedX(boolean left) {
+        if (left) {
+            carSelected.setVelocity(-40d, carSelected.getVelocityY());
+        } else {
+            carSelected.setVelocity(40d, carSelected.getVelocityY());
+        }
+        this.playerX += carSelected.getVelocityX().floatValue();
     }
 }
