@@ -54,6 +54,7 @@ public class GameController {
             return null;
         }
 
+        System.out.println(response.toPrettyString());
         return parseResponse(response.get("cars"));
     }
 
@@ -93,18 +94,18 @@ public class GameController {
         return actualCarColor;
     }
 
-    public void addPlayer(Integer pos, Integer playerX, String carColor, Integer lives) {
+    public void addPlayer(Player player) {
         ObjectNode request = mapper.createObjectNode();
         request.put("action", "add_player");
-        request.put("pos", pos);
-        request.put("playerX", playerX);
-        request.put("carColor", carColor);
-        request.put("lives", lives);
+        request.put("pos", player.getPos());
+        request.put("playerX", player.getPlayerX().intValue());
+        request.put("carColor", actualCarColor);
+        request.put("lives", player.getLives());
 
         try {
             connection.connect(mapper.writeValueAsString(request));
         } catch (JsonProcessingException ex) {
-            ex.printStackTrace();
+            System.err.println("[Error] Could not connect to server");
         }
     }
 
@@ -134,6 +135,10 @@ public class GameController {
         return getPlayersArray(response.get("players"));
     }
 
+    public void updatePlayerInfo(Player player) {
+
+    }
+
     private ArrayList<Player> getPlayersArray(JsonNode players) {
         ArrayList<Player> playersL = new ArrayList<>();
         for (JsonNode player : players) {
@@ -144,7 +149,7 @@ public class GameController {
 
             Player playerObject = new Player(new Car(carColor));
             playerObject.setLives(lives);
-            playerObject.setPlayerX(playerX);
+            playerObject.setPlayerX(playerX.floatValue());
             playerObject.setPos(pos);
 
             playersL.add(playerObject);

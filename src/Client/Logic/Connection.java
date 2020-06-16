@@ -53,7 +53,7 @@ public class Connection {
             return null;
         }
 
-        System.out.println("[Info] Conectado al servidor.");
+        //System.out.println("[Info] Conectado al servidor.");
 
         DataOutputStream outputStream;
 
