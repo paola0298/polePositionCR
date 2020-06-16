@@ -42,6 +42,7 @@ public class Game extends Application {
     private ArrayList<Sprite> obstacles;
     //TODO: recuperar jugadores del servidor.
     private ArrayList<Player> players;
+    private ArrayList<Player> otherPlayers;
     //TODO: recuperar power-ups del servidor.
     private ArrayList<Sprite> powerUps;
 
@@ -75,6 +76,7 @@ public class Game extends Application {
         //Hacer en la petición al servidor
         obstacles = new ArrayList<>();
         players = new ArrayList<>();
+        otherPlayers = new ArrayList<>();
         powerUps = new ArrayList<>();
 
         stage.setTitle("Pole Position CR");
@@ -198,44 +200,45 @@ public class Game extends Application {
                 }
 
                 //TODO: renderizar los demás sprites
-                for (Integer i = 0; i < players.size(); i++) {
-                    Player actual = players.get(i);
-                    System.out.println("Color del carro " + actual.getCarSelected().getCarColor());
-                    System.out.println("Color del carro del jugador actual " + controller.getActualColorCar());
-                    System.out.println(actual.getCarSelected().getCarColor().equals(controller.getActualColorCar()));
-                    if (actual.getCarSelected().getCarColor().equals(controller.getActualColorCar())) {
-                        System.out.println("Carro actual");
-                    } else {
-                        Double posX = 0d;
-                        Double posY = 0d;
-                        switch (i) {
-                            case 0 -> {
-                                posX = 250d;
-                                posY = 500d;
-                            }
-                            case 1 -> {
-                                posX = 600d;
-                                posY = 400d;
-                            }
-                            case 2 -> {
-                                posX = 250d;
-                                posY = 400d;
-                            }
-                        }
+                System.out.println("Other players size " + otherPlayers.size());
+                System.out.println("Players size " + players.size());
 
-                        String path = "";
-                        switch (actual.getCarSelected().getCarColor()) {
-                            case "Rojo" -> path = "/res/CarroRojo.png";
-                            case "Morado" -> path =  "/res/CarroMorado.png";
-                            case "Blanco" -> path =  "/res/CarroBlanco.png";
-                            case "Azul" -> path =  "/res/CarroAzul.png";
+                for (int i = 0; i< players.size(); i++) {
+                    System.out.println("Player " + i + " color " + players.get(i).getCarSelected().getCarColor());
+                }
+
+                for (Integer i = 0; i < otherPlayers.size(); i++) {
+                    Player actual = otherPlayers.get(i);
+                    System.out.println("Color del carro a ingresar" + actual.getCarSelected().getCarColor());
+                    Double posX = 0d;
+                    Double posY = 0d;
+                    switch (i) {
+                        case 0 -> {
+                            posX = 200d;
+                            posY = 500d;
                         }
-                        actual.getCarSelected().setPosition(posX, posY);
-                        actual.getCarSelected().setImage(path, 100, 100);
-                        actual.getCarSelected().render(context);
+                        case 1 -> {
+                            posX = 600d;
+                            posY = 300d;
+                        }
+                        case 2 -> {
+                            posX = 250d;
+                            posY = 300d;
+                        }
                     }
 
+                    String path = "";
+                    switch (actual.getCarSelected().getCarColor()) {
+                        case "Rojo" -> path = "/res/CarroRojo.png";
+                        case "Morado" -> path =  "/res/CarroMorado.png";
+                        case "Blanco" -> path =  "/res/CarroBlanco.png";
+                        case "Azul" -> path =  "/res/CarroAzul.png";
+                    }
+                    actual.getCarSelected().setPosition(posX, posY);
+                    actual.getCarSelected().setImage(path, 100, 100);
+                    actual.getCarSelected().render(context);
                 }
+
                 for (Integer i = 0; i < obstacles.size(); i++) {
 
                 }
@@ -269,8 +272,21 @@ public class Game extends Application {
 
                 //TODO: mandar estado del jugador al servidor para actualizarlo
                 players = controller.getPlayerList();
+                setOtherPlayers();
             }
         };
+    }
+
+    public void setOtherPlayers() {
+        for (Player actual : players) {
+            if (otherPlayers.size() < players.size() - 1) {
+                if (actual.getCarSelected().getCarColor().equals(controller.getActualColorCar())) {
+                    System.out.println("Carro actual");
+                } else {
+                    otherPlayers.add(actual);
+                }
+            }
+        }
     }
 
     public void manageInput(ArrayList<String> input) {
