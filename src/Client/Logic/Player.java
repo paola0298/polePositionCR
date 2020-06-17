@@ -147,4 +147,11 @@ public class Player {
         }
         this.playerX += carSelected.getVelocityX().floatValue();
     }
+
+    @Override
+    public String toString() {
+        return "[" + "Pos:" + getPos() +
+                "PlayerX: " + getPlayerX() +
+                "]";
+    }
 }
