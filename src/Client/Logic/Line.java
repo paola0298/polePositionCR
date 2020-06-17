@@ -16,6 +16,13 @@ public class Line {
     private static Integer height;
     private static Integer roadWidth;
 
+    /**
+     * TODO hacer documentación
+     * @param cameraDepth
+     * @param width
+     * @param height
+     * @param roadWidth
+     */
     public static void setValues(Float cameraDepth, Integer width, Integer height, Integer roadWidth) {
         Line.cameraDepth = cameraDepth;
         Line.width = width;
@@ -23,12 +30,21 @@ public class Line {
         Line.roadWidth = roadWidth;
     }
 
+    /**
+     * TODO hacer documentacion
+     */
     public Line() {
         curve = x = y = z = 0f;
         spriteX = clip = 0f;
         renderImage = true;
     }
 
+    /**
+     * TODO hacer documentacion
+     * @param camX
+     * @param camY
+     * @param camZ
+     */
     public void project(Integer camX, Integer camY, Integer camZ) {
         scale = cameraDepth / (z - camZ);
         X = (1 + scale * (x - camX)) * width / 2;
@@ -37,6 +53,11 @@ public class Line {
 
     }
 
+    /**
+     * TODO hacer documentacion
+     * @param context
+     * @param img
+     */
     public void drawSprite(GraphicsContext context, Image img) {
 //        Sprite sprite = new Sprite();
 //        sprite.setImage("/res/tree.png", 266, 266);

@@ -67,6 +67,7 @@ public class Game extends Application {
     private GameController controller;
     private final String cwd = System.getProperty("user.dir");
 
+
     @Override
     public void start(Stage stage) {
         controller = GameController.getInstance();
@@ -132,6 +133,9 @@ public class Game extends Application {
         stage.show();
     }
 
+    /**
+     * Método para manejar el ciclo del juego
+     */
     public void configureGameLoop() {
         gameLoop = new AnimationTimer() {
             @Override
@@ -324,6 +328,10 @@ public class Game extends Application {
         };
     }
 
+    /**
+     * Método para manejar la entrada del usuario mediante el teclado
+     * @param input Array de las teclas presionadas
+     */
     public void manageInput(ArrayList<String> input) {
         if (input.contains("LEFT")){
             if (actualPlayer.getCarSelected().getVelocityY() > 0) {
@@ -363,6 +371,9 @@ public class Game extends Application {
         return null;
     }
 
+    /**
+     * Método para cargar y configurar el velocimetro
+     */
     private void loadSpeedometer() {
         gauge = new Gauge();
         gauge.setSkin(new SpaceXSkin(gauge));
@@ -382,6 +393,9 @@ public class Game extends Application {
         gauge.setPrefSize(200, 200);
     }
 
+    /**
+     * Método para colocar en el array de inputs del usuario, las teclas que se presionen
+     */
     private void prepareActionHandlers() {
         input = new ArrayList<>();
         scene.setOnKeyPressed(keyEvent -> {
@@ -392,6 +406,9 @@ public class Game extends Application {
         scene.setOnKeyReleased(keyEvent -> input.remove(keyEvent.getCode().toString()));
     }
 
+    /**
+     * Método para cargar la información del jugador actual
+     */
     private void loadPlayer() {
         String colorCar = controller.getActualColorCar();
         String path = "";
@@ -407,6 +424,16 @@ public class Game extends Application {
         actualPlayer = new Player(carSprite);
     }
 
+    /**
+     * TODO colocar documentación
+     * @param color
+     * @param x1
+     * @param y1
+     * @param w1
+     * @param x2
+     * @param y2
+     * @param w2
+     */
     private void drawPolygon(Color color, Integer x1, Integer y1, Integer w1, Integer x2, Integer y2, Integer w2) {
         double[] pointsX = {
                 x1 - w1,
@@ -424,6 +451,9 @@ public class Game extends Application {
         context.fillPolygon(pointsX, pointsY, 4);
     }
 
+    /**
+     * Método para mostrar la ventana de juego
+     */
     public static void show() {
         new Game().start(new Stage());
     }

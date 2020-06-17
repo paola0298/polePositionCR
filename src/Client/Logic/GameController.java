@@ -9,6 +9,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.util.ArrayList;
 
+/**
+ * Clase que controla el juego
+ */
 public class GameController {
 
     private Game game;
@@ -22,13 +25,16 @@ public class GameController {
 
     private String actualCarColor;
 
+    /**
+     * Constructor de la clase GameController
+     */
     public GameController() {
         mapper = new ObjectMapper();
         connection = new Connection("localhost", 8080);
     }
 
     /**
-     * Metodo para mostrarle al jugador actual los colores de carros disponibles
+     * Método para mostrarle al jugador actual los colores de carros disponibles
      * @return Devuelve una lista con los colores disponibles
      */
     public ArrayList<String> getAvailableCars() {
@@ -59,7 +65,7 @@ public class GameController {
     }
 
     /**
-     * Metodo para convertir el string recibido a un arrayList
+     * Método para convertir el string recibido a un arrayList
      * @param cars String recibido del servidor
      * @return ArrayList con los carros disponibles
      */
@@ -74,7 +80,7 @@ public class GameController {
     }
 
     /**
-     * Funcion para enviar al servidor que un carro se utilizo
+     * Método para enviar al servidor que un carro se utilizo
      * @param carColor Color del carro utilizado
      */
     public void setAvailableCars(String carColor) {
@@ -90,10 +96,18 @@ public class GameController {
         }
     }
 
+    /**
+     * Método para obtener el color del carro del jugador actual
+     * @return Color del carro
+     */
     public String getActualColorCar() {
         return actualCarColor;
     }
 
+    /**
+     * Método para enviar una solicitud al servidor para agregar un jugador
+     * @param player Jugador a agregar
+     */
     public void addPlayer(Player player) {
         ObjectNode request = mapper.createObjectNode();
         request.put("action", "add_player");
@@ -110,6 +124,10 @@ public class GameController {
         }
     }
 
+    /**
+     * Método para obtener la lista de jugadores desde el servidor
+     * @return Lista con los jugadores
+     */
     public ArrayList<Player> getPlayerList() {
         ObjectNode request = mapper.createObjectNode();
         request.put("action", "get_players");
@@ -136,6 +154,10 @@ public class GameController {
         return getPlayersArray(response.get("players"));
     }
 
+    /**
+     * Método para enviar una solicitud al servidor para modificar la información de un jugador
+     * @param player Jugador a modificar
+     */
     public void updatePlayerInfo(Player player) {
         ObjectNode request = mapper.createObjectNode();
         request.put("action", "update_player");
@@ -153,6 +175,11 @@ public class GameController {
 
     }
 
+    /**
+     * Método para parsear el Json con la información de los jugadores
+     * @param players Json con los datos de los jugadores
+     * @return Lista con los jugadores
+     */
     private ArrayList<Player> getPlayersArray(JsonNode players) {
         ArrayList<Player> playersL = new ArrayList<>();
         for (JsonNode player : players) {
@@ -174,10 +201,18 @@ public class GameController {
         return playersL;
     }
 
+    /**
+     * Método para colocar el tamaño de la pista
+     * @param segmentLength Tamaño de la pista
+     */
     public void setValues(Integer segmentLength) {
         this.segmentLength = segmentLength;
     }
 
+    /**
+     * Método que hace una solicitud al servidor para obtener la pista
+     * @return Lista con los elementos de la pista
+     */
     public ArrayList<Line> getTrack() {
         ObjectNode request = mapper.createObjectNode();
         request.put("action", "get_track");
@@ -205,6 +240,11 @@ public class GameController {
         return parseTrack(response.get("track"));
     }
 
+    /**
+     * Método para parsear el Json recibido del servidor para la pista
+     * @param data Json con la información de la pista
+     * @return Lista con los elementos de la pista
+     */
     private ArrayList<Line> parseTrack(JsonNode data) {
         ArrayList<Line> track = new ArrayList<>();
         Integer length = data.get("length").asInt();
@@ -233,6 +273,12 @@ public class GameController {
         return track;
     }
 
+    /**
+     * TODO hacer documentación
+     * @param i
+     * @param ranges
+     * @return
+     */
     private Float checkInRange(Integer i, JsonNode ranges) {
         for (JsonNode curve : ranges) {
             Integer from = curve.get("from").asInt();
@@ -247,6 +293,10 @@ public class GameController {
         return 0f;
     }
 
+    /**
+     * Método para obtener la instancia del controlador
+     * @return Retorna la instancia de la clase
+     */
     public static synchronized GameController getInstance() {
         if (instance == null) {
             instance = new GameController();
@@ -254,6 +304,10 @@ public class GameController {
         return instance;
     }
 
+    /**
+     * TODO hacer documentación
+     * @param game
+     */
     public void setGame(Game game) {
         this.game = game;
     }
