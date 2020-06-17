@@ -101,6 +101,7 @@ public class GameController {
         request.put("playerX", player.getPlayerX().intValue());
         request.put("carColor", actualCarColor);
         request.put("lives", player.getLives());
+        request.put("points", player.getPoints());
 
         try {
             connection.connect(mapper.writeValueAsString(request));
@@ -136,6 +137,19 @@ public class GameController {
     }
 
     public void updatePlayerInfo(Player player) {
+        ObjectNode request = mapper.createObjectNode();
+        request.put("action", "update_player");
+        request.put("pos", player.getPos());
+        request.put("playerX", player.getPlayerX());
+        request.put("carColor", actualCarColor);
+        request.put("lives", player.getLives());
+        request.put("points", player.getPoints());
+
+        try {
+            connection.connect(mapper.writeValueAsString(request));
+        } catch (JsonProcessingException ex) {
+            System.err.println("[Error] Could not connect to server!");
+        }
 
     }
 
@@ -146,6 +160,8 @@ public class GameController {
             Integer playerX = player.get("playerX").asInt();
             Integer lives = player.get("lives").asInt();
             String carColor = player.get("carColor").textValue();
+
+            if (carColor.equals(actualCarColor)) continue;
 
             Player playerObject = new Player(new Car(carColor));
             playerObject.setLives(lives);
@@ -202,6 +218,9 @@ public class GameController {
 
             line.curve = checkInRange(i, curves);
 
+            if (i%20 == 0) {
+                line.spriteX = -3.5f;
+            }
             //Usar para cuestas
 //            if (i > 700) {
 //                Double value = Math.sin(i / 30.0);
