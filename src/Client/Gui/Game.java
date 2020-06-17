@@ -366,6 +366,7 @@ public class Game extends Application {
     private void loadSpeedometer() {
         gauge = new Gauge();
         gauge.setSkin(new SpaceXSkin(gauge));
+//        gauge.setSkin(new TileTextKpiSkin(gauge));
         gauge.setUnit("km / h");
         gauge.setUnitColor(Color.BLACK);
         gauge.setDecimals(0);
