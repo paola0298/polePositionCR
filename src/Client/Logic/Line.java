@@ -84,9 +84,9 @@ public class Line {
         context.drawImage(img, destX, destY, destW, destH);
     }
 
-    public Sprite drawSprite(GraphicsContext context, Sprite sprite) {
-        Double w = sprite.getImage().getWidth();
-        Double h = sprite.getImage().getHeight();
+    public Sprite drawSprite(GraphicsContext context, Sprite sprite, Image img) {
+        Double w = img.getWidth();
+        Double h = img.getHeight();
 
         Float destX = X + scale * spriteX * width / 2;
         Float destY = Y + 4;
@@ -103,7 +103,7 @@ public class Line {
             return sprite;
         }
 
-        context.drawImage(sprite.getImage(), destX, destY, destW, destH);
+        context.drawImage(img, destX, destY, destW, destH);
 
         sprite.setProjectedPosX(destX.doubleValue());
         sprite.setProjectedPosY(destY.doubleValue());

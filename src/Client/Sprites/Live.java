@@ -1,17 +1,13 @@
 package Client.Sprites;
 
-/**
- * Clase del turbo
- */
-public class Turbo extends Sprite{
+public class Live extends Sprite {
 
     public Integer id;
     public Boolean taken;
 
-    /**
-     * Constructor de la clase Turbo
-     */
-    public Turbo () { }
+    public Live() {
+
+    }
 
     public Boolean isTaken() {
         return taken;

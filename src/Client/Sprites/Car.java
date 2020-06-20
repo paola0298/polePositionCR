@@ -11,7 +11,7 @@ public class Car extends Sprite{
 
     /**
      * Constructor de la clase Car
-     * @param carColor
+     * @param carColor Color del carro escogido
      */
     public Car (String carColor) {
         this.carColor = carColor;
@@ -23,14 +23,6 @@ public class Car extends Sprite{
      */
     public String getCarColor() {
         return this.carColor;
-    }
-
-    /**
-     * Método para colocar el color del carro
-     * @param carColor Color del carro
-     */
-    public void setCarColor(String carColor) {
-        this.carColor = carColor;
     }
 
     /**

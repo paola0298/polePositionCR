@@ -1,10 +1,12 @@
 package Client.Gui;
 
 import Client.Logic.GameController;
+import Client.Logic.GameInfo;
 import Client.Logic.Line;
 import Client.Logic.Player;
 import Client.Sprites.Car;
 import Client.Sprites.Hole;
+import Client.Sprites.Live;
 import Client.Sprites.Turbo;
 import eu.hansolo.medusa.Gauge;
 import eu.hansolo.medusa.skins.SpaceXSkin;
@@ -29,22 +31,24 @@ public class Game extends Application {
     private final Integer width = 1024;
     private final Integer height = 668;
 
-    private final Integer roadWidth = 1500;
     private final Integer segmentLength = 200;
-    private final Float cameraDepth = 0.84f;
     private final Integer camDefaultHeight = 1200;
     private Integer lineCount;
 
     private Player actualPlayer;
+    private GameInfo gameInfo;
 
     private ArrayList<Line> trackLines;
+//    private ArrayList<Player> players;
+    private HashMap<Integer, Player> players;
     private HashMap<Integer, Hole> holes;
-    private ArrayList<Player> players;
     private HashMap<Integer, Turbo> turbos;
+    private HashMap<Integer, Live> lives;
     private ArrayList<String> input;
 
     private ArrayList<Hole> visibleHoles;
     private ArrayList<Turbo> visibleTurbos;
+    private ArrayList<Live> visibleLives;
 
     private final Color grass = Color.rgb(68, 157, 15);
     private final Color trackBorder1 = Color.rgb(224, 224, 224);
@@ -60,14 +64,20 @@ public class Game extends Application {
     private Image background;
     private AnimationTimer gameLoop;
 
+    private long time;
+
     private Image treeImage;
+    private Image holeImage;
+    private Image turboImage;
+    private Image liveImage;
 
     private GameController controller;
     private final String cwd = System.getProperty("user.dir");
     private Text textLives;
     private Text pointsText;
 
-    private Boolean flag = true;
+    private Integer sendDelay;
+    private final Integer defaultSendDelay = 2;
 
 
     @Override
@@ -78,9 +88,14 @@ public class Game extends Application {
 
         loadPlayer();
 
+        sendDelay = defaultSendDelay;
+
+        gameInfo = new GameInfo();
+
         controller.addPlayer(actualPlayer);
 
-        players = new ArrayList<>();
+//        players = new ArrayList<>();
+        players = new HashMap<>();
         holes = new HashMap<>();
         turbos = new HashMap<>();
 
@@ -95,11 +110,13 @@ public class Game extends Application {
         prepareActionHandlers();
 
         treeImage = imageLoader(cwd.replaceAll("\\\\", "/") + "/res/tree.png", 300d, 300d);
+        holeImage = imageLoader(cwd.replaceAll("\\\\", "/") + "/res/hole1.png", 150d, 150d);
+        turboImage = imageLoader(cwd.replaceAll("\\\\", "/") + "/res/rayo.png", 150d, 150d);
+        liveImage = imageLoader(cwd.replaceAll("\\\\", "/") + "/res/heart.png", 150d, 150d);
 
         actualPlayer.getCarSelected().setVelocity(0d, 0d);
 
-
-        textLives = new Text("Vidas: " + actualPlayer.getLives()); // TODO cuando se cree el jugador, obtener las vidas del jugador actual
+        Text textLives = new Text("Vidas: " + actualPlayer.getLives()); // TODO cuando se cree el jugador, obtener las vidas del jugador actual
         textLives.setLayoutX(850);
         textLives.setLayoutY(50);
         textLives.getStyleClass().add("text-game");
@@ -134,9 +151,13 @@ public class Game extends Application {
         lineCount = trackLines.size();
         holes = controller.getHolesList();
         turbos = controller.getTurbosList();
+        lives = controller.getLiveList();
         visibleHoles = new ArrayList<>();
         visibleTurbos = new ArrayList<>();
+        visibleLives = new ArrayList<>();
 
+        Integer roadWidth = 1500;
+        Float cameraDepth = 0.84f;
         Line.setValues(cameraDepth, width, height, roadWidth);
         configureGameLoop();
         gameLoop.start();
@@ -154,7 +175,9 @@ public class Game extends Application {
         gameLoop = new AnimationTimer() {
             @Override
             public void handle(long l) {
-                context.clearRect(0,0,width, height);
+                long prevTime = System.nanoTime();
+
+                context.clearRect(0,0, width, height);
 
                 context.drawImage(background, 0, 0);
 
@@ -164,6 +187,7 @@ public class Game extends Application {
                     laps += 1;
                     resetSprites();
                     controller.resetTurbos();
+                    controller.resetLives();
                 }
 
                 //Evitar que startpos sea menor a cero.
@@ -241,18 +265,18 @@ public class Game extends Application {
 
                 // Actualizar la vida del jugador actual
                 // todo actualizar las vidas cuando recibe un disparo y cuando encuentra una vida en el camino
-                actualPlayer.setLives(controller.getPlayerLives());
-                if (laps == 1 && flag) {
-                    actualPlayer.updateLives(false);
-                    controller.updatePlayerInfo(actualPlayer);
-                    System.out.println("Vidas: "+ actualPlayer.getLives());
-                    textLives.setText("Vidas: " + controller.getPlayerLives());
-                    System.out.println("Vidas: "+ controller.getPlayerLives());
-                    flag = false;
-                }
+//                actualPlayer.setLives(controller.getPlayerLives());
+//                if (laps == 1 && flag) {
+//                    actualPlayer.updateLives(false);
+//                    controller.updatePlayerInfo(actualPlayer);
+//                    System.out.println("Vidas: "+ actualPlayer.getLives());
+//                    textLives.setText("Vidas: " + controller.getPlayerLives());
+//                    System.out.println("Vidas: "+ controller.getPlayerLives());
+//                    flag = false;
+//                }
 
                 //Dibujar sprites
-                for (Integer n = startpos + 299; n > startpos; n--) {
+                for (Integer n = startpos + 200; n > startpos; n--) {
                     Integer currentIndex = n % lineCount;
                     Line line  = trackLines.get(currentIndex);
                     if (line.spriteX < 0) {
@@ -260,29 +284,30 @@ public class Game extends Application {
                     }
 
                     Hole hole = holes.get(n);
-                    Turbo turbo = turbos.get(n);
-
                     if (hole != null) {
-                        hole = (Hole) line.drawSprite(context, hole);
+                        hole = (Hole) line.drawSprite(context, hole, holeImage);
                         holes.put(hole.getPosY().intValue(), hole);
                         visibleHoles.add(hole);
                     }
-                    if (turbo != null && !turbo.getTurboGot()) {
 
-                        turbo = (Turbo) line.drawSprite(context, turbo);
+                    Turbo turbo = turbos.get(n);
+                    if (turbo != null && !turbo.isTaken()) {
+
+                        turbo = (Turbo) line.drawSprite(context, turbo, turboImage);
                         turbos.put(turbo.getPosY().intValue(), turbo);
                         visibleTurbos.add(turbo);
                     }
 
-                    for (Player p : players) {
-                        Integer playerPos = p.getPos() / segmentLength;
-                        //Float playerXPos = p.getPlayerX();
-                        if (playerPos.intValue() == n) {
-                            //TODO: arreglar posición lateral del jugador.
-//                            line.spriteX = playerXPos / 500;
-                            //TODO: verificar el color del carro y enviar la imagen correspondiente.
-                            line.drawSprite(context, treeImage);
-                        }
+                    Live live = lives.get(n);
+                    if (live != null && !live.isTaken()) {
+                        live = (Live) line.drawSprite(context, live, liveImage);
+                        lives.put(live.getPosY().intValue(), live);
+                        visibleLives.add(live);
+                    }
+
+                    Player player = players.get(n);
+                    if (player != null) {
+                        player.setCarSelected((Car) line.drawSprite(context, player.getCarSelected(), player.getCarSelected().getImage()));
                     }
                 }
 
@@ -318,15 +343,31 @@ public class Game extends Application {
                     actualPlayer.decreaseTurboTimeout();
                 }
 
-                //Se actualiza la info del jugador
-                controller.updatePlayerInfo(actualPlayer);
+                if (sendDelay < 0) {
+                    sendDelay = defaultSendDelay;
 
-                //Se obtiene la info de los demás jugadores
-                players = controller.getPlayerList();
-                turbos = controller.getTurbosList();
+                    //Se actualiza la info del jugador
+                    controller.updatePlayerInfo(actualPlayer);
+
+                    //Se obtiene la info de los demás jugadores
+                    players = controller.getPlayerList();
+                    turbos = controller.updateTurboList();
+                    lives = controller.updateLiveList();
+
+                } else {
+                    sendDelay--;
+                }
 
                 visibleHoles.clear();
                 visibleTurbos.clear();
+                visibleLives.clear();
+
+                double elapsedTime = (System.nanoTime() - prevTime) / 1E9;
+                gameInfo.updateTime(elapsedTime);
+
+                if ((gameInfo.getTime().intValue() % 10) == 0) {
+                    actualPlayer.updatePoints(1);
+                }
             }
         };
     }
@@ -366,8 +407,13 @@ public class Game extends Application {
         }
 
         for (Turbo turbo: turbos.values()) {
-            turbo.setTurboGot(false);
+            turbo.setTaken(false);
             turbos.put(turbo.getPosY().intValue(), turbo);
+        }
+
+        for (Live live: lives.values()) {
+            live.setTaken(false);
+            lives.put(live.getPosY().intValue(), live);
         }
     }
 
@@ -382,13 +428,22 @@ public class Game extends Application {
         }
         //Verificar si el jugador toma un turbo
         for (Turbo turbo : visibleTurbos) {
-            if (!actualPlayer.getCarSelected().intersectsProjected(turbo) || turbo.getTurboGot())
+            if (!actualPlayer.getCarSelected().intersectsProjected(turbo) || turbo.isTaken())
                 continue;
             actualPlayer.Turbo();
-            turbo.setTurboGot(true);
+            turbo.setTaken(true);
             turbos.put(turbo.getPosY().intValue(), turbo);
-
             controller.updateTurbo(turbo.getId());
+        }
+
+        //Verificar si el jugador toma una vida
+        for (Live live: visibleLives) {
+            if (!actualPlayer.getCarSelected().intersectsProjected(live) || live.isTaken())
+                continue;
+            actualPlayer.gotLive();
+            live.setTaken(true);
+            lives.put(live.getPosY().intValue(), live);
+            controller.updateLive(live.getId());
         }
     }
 
