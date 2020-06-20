@@ -16,6 +16,8 @@ public class Player {
     private Double maxSpeedNormal;
     private Double maxSpeedTurbo;
     private boolean hasTurbo;
+    private Integer turboTimeout;
+    private final Integer turboDefaultTimeout;
 
     private boolean isCrashed;
     private Integer crashTimeout;
@@ -33,9 +35,11 @@ public class Player {
         this.playerX = 0f;
 
         this.offroadMaxSpeed = 70d;
-        this.maxSpeedNormal = 240d;
-        this.maxSpeedTurbo = 300d;
+        this.maxSpeedNormal = 180d;
+        this.maxSpeedTurbo = 270d;
         this.hasTurbo = false;
+        this.turboDefaultTimeout = 200;
+        this.turboTimeout = this.turboDefaultTimeout;
 
         this.isCrashed = false;
         this.crashDefaultTimeout = 80;
@@ -164,7 +168,7 @@ public class Player {
     public void updateSpeedY(Boolean accelerating) {
         if (!isCrashed) {
             if (accelerating) {
-                var accel = hasTurbo ? 0.65d : 0.4d;
+                var accel = hasTurbo ? 1.2d : 0.4d;
                 carSelected.increaseVelocity(0d, accel);
             } else {
                 carSelected.increaseVelocity(0d, -0.6d);
@@ -212,6 +216,7 @@ public class Player {
 
     public void crashed() {
         this.isCrashed = true;
+        this.hasTurbo = false;
         carSelected.setVelocity(10d, 0d);
     }
 
@@ -221,6 +226,23 @@ public class Player {
         if (crashTimeout < 0) {
             isCrashed = false;
             crashTimeout = crashDefaultTimeout;
+        }
+    }
+
+    public void Turbo() {
+        this.hasTurbo = true;
+        this.turboTimeout = turboDefaultTimeout;
+    }
+
+    public Boolean hasTurbo() {
+        return this.hasTurbo;
+    }
+
+    public void decreaseTurboTimeout() {
+        this.turboTimeout--;
+
+        if (this.turboTimeout < 0) {
+            this.hasTurbo = false;
         }
     }
 
