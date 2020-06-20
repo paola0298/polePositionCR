@@ -254,6 +254,61 @@ public class GameController {
         return this.turboSprites;
     }
 
+    public void updateTurbo(Integer id) {
+        ObjectNode request = mapper.createObjectNode();
+        request.put("action", "update_turbo");
+        request.put("turbo_id", id);
+
+        try {
+            connection.connect(mapper.writeValueAsString(request));
+        } catch (JsonProcessingException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public HashMap<Integer, Turbo> updateTurboList() {
+        ObjectNode request = mapper.createObjectNode();
+        request.put("action", "update_turbos");
+
+        String data = null;
+        try {
+            data = connection.connect(mapper.writeValueAsString(request));
+        } catch (JsonProcessingException ex) {
+            ex.printStackTrace();
+        }
+
+        if (data == null) return null;
+
+        JsonNode response;
+        try {
+            response = mapper.readTree(data);
+        } catch (JsonProcessingException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+
+        JsonNode turbos = response.get("turbos");
+
+        turboSprites.clear();
+
+        turbos.forEach(jsonNode -> {
+            Turbo turbo = new Turbo();
+
+            Integer id = jsonNode.get("id").asInt();
+            Integer posX = jsonNode.get("posX").asInt();
+            Integer posY = jsonNode.get("posY").asInt();
+            Integer got = jsonNode.get("got").asInt();
+
+            turbo.setId(id);
+            turbo.setPosition(posX.doubleValue(), posY.doubleValue());
+            turbo.setTurboGot(got == 1);
+
+            turboSprites.put(posY, turbo);
+        });
+
+        return  turboSprites;
+    }
+
     /**
      * Método para parsear el Json recibido del servidor para la pista
      * @param data Json con la información de la pista
@@ -311,9 +366,11 @@ public class GameController {
             Integer id = jsonNode.get("id").asInt();
             Integer posX = jsonNode.get("posX").asInt();
             Integer posY = jsonNode.get("posY").asInt();
+            Integer got = jsonNode.get("got").asInt();
 
             turbo.setId(id);
             turbo.setPosition(posX.doubleValue(), posY.doubleValue());
+            turbo.setTurboGot(got == 1);
 
             turboSprites.put(posY, turbo);
         });
@@ -358,7 +415,7 @@ public class GameController {
 
     /**
      * Metodo para obtener las vidas del jugador actual
-     * @return
+     * @return Cantidad de vidas del jugador
      */
     public int getPlayerLives() {
         ObjectNode request = mapper.createObjectNode();
@@ -405,5 +462,16 @@ public class GameController {
      */
     public void setGame(Game game) {
         this.game = game;
+    }
+
+    public void resetTurbos() {
+        ObjectNode request = mapper.createObjectNode();
+        request.put("action", "reset_turbos");
+
+        try {
+            connection.connect(mapper.writeValueAsString(request));
+        } catch (JsonProcessingException ex) {
+            ex.printStackTrace();
+        }
     }
 }
