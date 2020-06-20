@@ -6,19 +6,19 @@ package Client.Sprites;
 public class Turbo extends Sprite{
 
     public Integer id;
-    public Boolean turboGot;
+    public Boolean taken;
 
     /**
      * Constructor de la clase Turbo
      */
     public Turbo () { }
 
-    public Boolean getTurboGot() {
-        return turboGot;
+    public Boolean isTaken() {
+        return taken;
     }
 
-    public void setTurboGot(Boolean turboGot) {
-        this.turboGot = turboGot;
+    public void setTaken(Boolean taken) {
+        this.taken = taken;
     }
 
     public Integer getId() {
