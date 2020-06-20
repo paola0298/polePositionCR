@@ -46,6 +46,10 @@ public class Player {
         this.crashTimeout = this.crashDefaultTimeout;
     }
 
+    public void setCarSelected(Car car) {
+        this.carSelected = car;
+    }
+
     /**
      * Método para obtener las vidas del jugador
      * @return vidas actuales del jugador
@@ -231,6 +235,7 @@ public class Player {
 
     public void Turbo() {
         this.hasTurbo = true;
+        updatePoints(2);
         this.turboTimeout = turboDefaultTimeout;
     }
 
@@ -251,5 +256,14 @@ public class Player {
         return "[" + "Pos:" + getPos() +
                 "PlayerX: " + getPlayerX() +
                 "]";
+    }
+
+    public void gotLive() {
+        this.lives++;
+        this.updatePoints(3);
+
+        if (this.lives > 3) {
+            this.lives = 3;
+        }
     }
 }
