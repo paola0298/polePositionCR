@@ -65,6 +65,7 @@ public class Game extends Application {
     private GameController controller;
     private final String cwd = System.getProperty("user.dir");
     private Text textLives;
+    private Text pointsText;
 
     private Boolean flag = true;
 
@@ -113,9 +114,14 @@ public class Game extends Application {
         lapsLives.setLayoutY(50);
         lapsLives.getStyleClass().add("text-game");
 
+        pointsText = new Text("Puntos: " + actualPlayer.getPoints());
+        pointsText.setLayoutY(50);
+        pointsText.setLayoutX(420);
+        pointsText.getStyleClass().add("text-game");
+
         background = imageLoader(cwd.replaceAll("\\\\", "/") + "/res/mountain.png", 340d, 1024d);
 
-        root.getChildren().addAll(canvas, gauge, textLives, lapsLives, waitText);
+        root.getChildren().addAll(canvas, gauge, textLives, lapsLives, waitText, pointsText);
 
         scene.getStylesheets().add("file:///" + cwd.replaceAll("\\\\", "/") + "/res/style.css");
 

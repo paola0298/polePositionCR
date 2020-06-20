@@ -34,7 +34,7 @@ public class GameController {
      */
     public GameController() {
         mapper = new ObjectMapper();
-        connection = new Connection("localhost", 8080);
+        connection = new Connection("192.168.0.18", 8080);
         holeSprites = new HashMap<>();
         turboSprites = new HashMap<>();
     }
@@ -443,6 +443,34 @@ public class GameController {
         }
 
         return response.get("lives").asInt();
+    }
+
+    public int getPlayerPoints() {
+        ObjectNode request = mapper.createObjectNode();
+        request.put("action", "get_points");
+        request.put("car_color", actualCarColor);
+
+        String data;
+        try {
+            data = connection.connect(mapper.writeValueAsString(request));
+        } catch (JsonProcessingException ex) {
+            ex.printStackTrace();
+            return -1;
+        }
+
+        if (data == null) {
+            return -1;
+        }
+
+        JsonNode response;
+        try {
+            response = mapper.readTree(data);
+        } catch (JsonProcessingException ex) {
+            ex.printStackTrace();
+            return -1;
+        }
+
+        return response.get("points").asInt();
     }
 
     /**
