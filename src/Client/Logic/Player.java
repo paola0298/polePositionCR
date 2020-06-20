@@ -11,10 +11,15 @@ public class Player {
     private Car carSelected;
     private Integer pos;
     private Float playerX;
+
     private Double offroadMaxSpeed;
     private Double maxSpeedNormal;
     private Double maxSpeedTurbo;
     private boolean hasTurbo;
+
+    private boolean isCrashed;
+    private Integer crashTimeout;
+    private final Integer crashDefaultTimeout;
 
     /**
      * Constructor de la clase Player
@@ -31,6 +36,10 @@ public class Player {
         this.maxSpeedNormal = 240d;
         this.maxSpeedTurbo = 300d;
         this.hasTurbo = false;
+
+        this.isCrashed = false;
+        this.crashDefaultTimeout = 80;
+        this.crashTimeout = this.crashDefaultTimeout;
     }
 
     /**
@@ -153,17 +162,21 @@ public class Player {
      * @param accelerating Indica si el auto esta acelerando o frenando
      */
     public void updateSpeedY(Boolean accelerating) {
-        if (accelerating) {
-            var accel = hasTurbo ? 0.65d : 0.4d;
-            carSelected.increaseVelocity(0d, accel);
-        } else {
-            carSelected.increaseVelocity(0d, -0.6d);
-        }
+        if (!isCrashed) {
+            if (accelerating) {
+                var accel = hasTurbo ? 0.65d : 0.4d;
+                carSelected.increaseVelocity(0d, accel);
+            } else {
+                carSelected.increaseVelocity(0d, -0.6d);
+            }
 
-        if (carSelected.getVelocityY() > 240d) {
-            carSelected.setVelocity(carSelected.getVelocityX(), 240d);
-        } else if (carSelected.getVelocityY() < 0d) {
-            carSelected.setVelocity(carSelected.getVelocityX(), 0d);
+            Double speedLimit = hasTurbo ? maxSpeedTurbo: maxSpeedNormal;
+
+            if (carSelected.getVelocityY() > speedLimit) {
+                carSelected.setVelocity(carSelected.getVelocityX(), speedLimit);
+            } else if (carSelected.getVelocityY() < 0d) {
+                carSelected.setVelocity(carSelected.getVelocityX(), 0d);
+            }
         }
     }
 
@@ -183,12 +196,32 @@ public class Player {
      * @param left Indica la dirección del auto
      */
     public void updateSpeedX(boolean left) {
-        if (left) {
-            carSelected.setVelocity(-40d, carSelected.getVelocityY());
-        } else {
-            carSelected.setVelocity(40d, carSelected.getVelocityY());
+        if (!isCrashed) {
+            if (left) {
+                carSelected.setVelocity(-40d, carSelected.getVelocityY());
+            } else {
+                carSelected.setVelocity(40d, carSelected.getVelocityY());
+            }
+            this.playerX += carSelected.getVelocityX().floatValue();
         }
-        this.playerX += carSelected.getVelocityX().floatValue();
+    }
+
+    public Boolean isCrashed() {
+        return this.isCrashed;
+    }
+
+    public void crashed() {
+        this.isCrashed = true;
+        carSelected.setVelocity(10d, 0d);
+    }
+
+    public void decreaseCrashTimeout() {
+        this.crashTimeout--;
+
+        if (crashTimeout < 0) {
+            isCrashed = false;
+            crashTimeout = crashDefaultTimeout;
+        }
     }
 
     @Override
