@@ -4,7 +4,8 @@ import Client.Logic.GameController;
 import Client.Logic.Line;
 import Client.Logic.Player;
 import Client.Sprites.Car;
-import Client.Sprites.Sprite;
+import Client.Sprites.Hole;
+import Client.Sprites.Turbo;
 import eu.hansolo.medusa.Gauge;
 import eu.hansolo.medusa.skins.SpaceXSkin;
 import javafx.animation.AnimationTimer;
@@ -22,6 +23,7 @@ import javafx.stage.Stage;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Game extends Application {
     private final Integer width = 1024;
@@ -33,21 +35,16 @@ public class Game extends Application {
     private final Integer camDefaultHeight = 1200;
     private Integer lineCount;
 
-    //Para evitar sobrecargar el servidor.
-//    private final Integer defaultSendDelay = 8;
-    private final Integer defaultSendDelay = 1;
-    private Integer sendDelay = defaultSendDelay;
-
     private Player actualPlayer;
 
     private ArrayList<Line> trackLines;
-    //TODO: recuperar obstaculos del servidor.
-    private ArrayList<Sprite> obstacles;
+    private HashMap<Integer, Hole> holes;
     private ArrayList<Player> players;
-    private ArrayList<Player> otherPlayers;
-    //TODO: recuperar power-ups del servidor.
-    private ArrayList<Sprite> powerUps;
+    private HashMap<Integer, Turbo> turbos;
     private ArrayList<String> input;
+
+    private ArrayList<Hole> visibleHoles;
+    private ArrayList<Turbo> visibleTurbos;
 
     private final Color grass = Color.rgb(68, 157, 15);
     private final Color trackBorder1 = Color.rgb(224, 224, 224);
@@ -79,11 +76,9 @@ public class Game extends Application {
 
         controller.addPlayer(actualPlayer);
 
-        //Hacer en la petición al servidor
-        obstacles = new ArrayList<>();
         players = new ArrayList<>();
-        otherPlayers = new ArrayList<>();
-        powerUps = new ArrayList<>();
+        holes = new HashMap<>();
+        turbos = new HashMap<>();
 
         stage.setTitle("Pole Position CR");
         Group root = new Group();
@@ -104,7 +99,7 @@ public class Game extends Application {
         textLives.setLayoutY(50);
         textLives.getStyleClass().add("text-game");
 
-        waitText  = new Text("Esperando a otros jugadores");
+        waitText = new Text("Esperando a otros jugadores");
         waitText.setLayoutX(400.0);
         waitText.setLayoutY(100);
         waitText.getStyleClass().add("text-game");
@@ -127,6 +122,10 @@ public class Game extends Application {
             return;
         }
         lineCount = trackLines.size();
+        holes = controller.getHolesList();
+        turbos = controller.getTurbosList();
+        visibleHoles = new ArrayList<>();
+        visibleTurbos = new ArrayList<>();
 
         Line.setValues(cameraDepth, width, height, roadWidth);
         configureGameLoop();
@@ -149,6 +148,7 @@ public class Game extends Application {
                 if (actualPlayer.getPos() >= lineCount * segmentLength) {
                     actualPlayer.manualUpdatePos(lineCount * segmentLength * -1);
                     laps += 1;
+                    resetHoles();
                 }
 
                 //Evitar que startpos sea menor a cero.
@@ -164,13 +164,13 @@ public class Game extends Application {
                     manageInput(input);
                 }
 
-                Float x = 0f, dx = 0f;
-                Double maxY = height.doubleValue();
+                actualPlayer.updatePos();
 
                 //Para cuestas
 //                Integer camHeight = camDefaultHeight + trackLines.get(startpos).y.intValue();
 
-                actualPlayer.updatePos();
+                Float x = 0f, dx = 0f;
+                Double maxY = height.doubleValue();
 
                 //Se dibuja la pista, bordes y pasto
                 for (Integer n = startpos; n < startpos + 300; n++) {
@@ -186,10 +186,7 @@ public class Game extends Application {
                     x += dx;
                     dx += line.curve;
 
-                    //TEST
                     line.clip = maxY.floatValue();
-
-                    //TEST
                     trackLines.set(currentIndex, line);
 
                     //Evita glitches gráficos
@@ -227,47 +224,7 @@ public class Game extends Application {
                     }
                 }
 
-                //TODO: renderizar los demás sprites
-//                for (Integer i = 0; i < otherPlayers.size(); i++) {
-//                    Player actual = otherPlayers.get(i);
-//                    //System.out.println("Color del carro a ingresar" + actual.getCarSelected().getCarColor());
-//                    Double posX = 0d;
-//                    Double posY = 0d;
-//                    switch (i) {
-//                        case 0 -> {
-//                            posX = 200d;
-//                            posY = 500d;
-//                        }
-//                        case 1 -> {
-//                            posX = 600d;
-//                            posY = 300d;
-//                        }
-//                        case 2 -> {
-//                            posX = 250d;
-//                            posY = 300d;
-//                        }
-//                    }
-//
-//                    String path = "";
-//                    switch (actual.getCarSelected().getCarColor()) {
-//                        case "Rojo" -> path = "/res/CarroRojo.png";
-//                        case "Morado" -> path =  "/res/CarroMorado.png";
-//                        case "Blanco" -> path =  "/res/CarroBlanco.png";
-//                        case "Azul" -> path =  "/res/CarroAzul.png";
-//                    }
-//                    actual.getCarSelected().setPosition(posX, posY);
-//                    actual.getCarSelected().setImage(path, 100, 100);
-//                    actual.getCarSelected().render(context);
-//                }
-//
-//                for (Integer i = 0; i < obstacles.size(); i++) {
-//
-//                }
-//                for (Integer i = 0; i < powerUps.size(); i++) {
-//
-//                }
-
-                //Dibujar árboles
+                //Dibujar sprites
                 for (Integer n = startpos + 299; n > startpos; n--) {
                     Integer currentIndex = n % lineCount;
                     Line line  = trackLines.get(currentIndex);
@@ -275,19 +232,33 @@ public class Game extends Application {
                         line.drawSprite(context, treeImage);
                     }
 
+                    Hole hole = holes.get(n);
+                    Turbo turbo = turbos.get(n);
+
+                    if (hole != null) {
+                        hole = (Hole) line.drawSprite(context, hole);
+                        holes.put(hole.getPosY().intValue(), hole);
+                        visibleHoles.add(hole);
+                    }
+                    if (turbo != null) {
+                        turbo = (Turbo) line.drawSprite(context, turbo);
+                        turbos.put(turbo.getPosY().intValue(), turbo);
+                        visibleTurbos.add(turbo);
+                    }
+
                     for (Player p : players) {
                         Integer playerPos = p.getPos() / segmentLength;
-                        Float playerXPos = p.getPlayerX();
-
+                        //Float playerXPos = p.getPlayerX();
                         if (playerPos.intValue() == n) {
                             //TODO: arreglar posición lateral del jugador.
 //                            line.spriteX = playerXPos / 500;
-
                             //TODO: verificar el color del carro y enviar la imagen correspondiente.
                             line.drawSprite(context, treeImage);
                         }
                     }
                 }
+
+                processCollitions();
 
                 //Para que el carro se salga en las curvas.
                 Line currentLine = trackLines.get(startpos % lineCount);
@@ -312,19 +283,18 @@ public class Game extends Application {
 
                 actualPlayer.getCarSelected().render(context);
 
-
-                if (sendDelay == 0) {
-                    sendDelay = defaultSendDelay;
-
-                    //Se actualiza la info del jugador
-                    controller.updatePlayerInfo(actualPlayer);
-
-                    //Se obtiene la info de los demás jugadores
-                    players = controller.getPlayerList();
-                } else {
-                    //System.out.println("Delay: " + sendDelay);
-                    sendDelay--;
+                if (actualPlayer.isCrashed()) {
+                    actualPlayer.decreaseCrashTimeout();
                 }
+
+                //Se actualiza la info del jugador
+                controller.updatePlayerInfo(actualPlayer);
+
+                //Se obtiene la info de los demás jugadores
+                players = controller.getPlayerList();
+
+                visibleHoles.clear();
+                visibleTurbos.clear();
             }
         };
     }
@@ -355,6 +325,33 @@ public class Game extends Application {
         if (input.contains("SPACE"))
             //TODO: disparar a los demás jugadores.
             System.out.println("Disparar... ");
+    }
+
+    public void resetHoles() {
+        for(Hole hole: holes.values()) {
+            hole.setCarCrashed(false);
+            holes.put(hole.getPosY().intValue(), hole);
+        }
+    }
+
+    public void processCollitions() {
+        //Verificar si el jugador choca con un hueco
+        for (Hole hole : visibleHoles) {
+            if (!actualPlayer.isCrashed() && actualPlayer.getCarSelected().intersectsProjected(hole)) {
+                if (!hole.carCrashed) {
+                    actualPlayer.crashed();
+                    hole.setCarCrashed(true);
+                    holes.put(hole.getPosY().intValue(), hole);
+                }
+            }
+        }
+
+        //Verificar si el jugador toma un turbo
+        for (Turbo turbo : visibleTurbos) {
+            if (actualPlayer.getCarSelected().intersectsProjected(turbo)) {
+                System.out.println("Aceleró!");
+            }
+        }
     }
 
     /**
@@ -420,20 +417,29 @@ public class Game extends Application {
             case "Blanco" -> path =  "/res/CarroBlanco.png";
             case "Azul" -> path =  "/res/CarroAzul.png";
         }
-        carSprite.setImage(path, 100, 100);
-        carSprite.setPosition(400.0, 500.0);
+
+        carSprite.setImage(path, 110, 200);
+
+        Integer center = (width / 2) - (carSprite.getWidth() / 2);
+        carSprite.setPosition(center.doubleValue(), 500.0);
+
+        carSprite.setProjectedPosX(center.doubleValue());
+        carSprite.setProjectedPosY(500d);
+        carSprite.setProjectedWidth(200d);
+        carSprite.setProjectedHeight(110d);
+
         actualPlayer = new Player(carSprite);
     }
 
     /**
-     * TODO colocar documentación
-     * @param color
-     * @param x1
-     * @param y1
-     * @param w1
-     * @param x2
-     * @param y2
-     * @param w2
+     * Función principal para dibujar un poligono en el canvas, utilizando las coordenadas de la línea actual y anterior.
+     * @param color Color con el que dibujar el poligono.
+     * @param x1 Posición x de la línea anterior
+     * @param y1 Posición y de la línea anterior
+     * @param w1 Valor w de la línea anterior
+     * @param x2 Posición x de de línea actual
+     * @param y2 Posición y de la línea actual
+     * @param w2 Valor w de la línea actual
      */
     private void drawPolygon(Color color, Integer x1, Integer y1, Integer w1, Integer x2, Integer y2, Integer w2) {
         double[] pointsX = {
