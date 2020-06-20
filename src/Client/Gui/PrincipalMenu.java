@@ -2,7 +2,6 @@ package Client.Gui;
 
 import Client.Logic.GameController;
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -18,7 +17,6 @@ import javafx.stage.Stage;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class PrincipalMenu extends Application {
 
@@ -29,7 +27,7 @@ public class PrincipalMenu extends Application {
     private GameController controller;
 
     @Override
-    public void start(Stage stage) throws Exception {
+    public void start(Stage stage){
         controller = GameController.getInstance();
         mainLayout = new StackPane();
 
@@ -76,7 +74,6 @@ public class PrincipalMenu extends Application {
      * Carga el menu de seleccion de los carros
      */
     private void initCarSelection() {
-        AtomicReference<Boolean> flag = new AtomicReference<>(true);
         carMenuWindow = new VBox();
         HBox carArray = new HBox();
 
@@ -151,22 +148,6 @@ public class PrincipalMenu extends Application {
 
         return addTokenImage;
     }
-
-    /**
-     *
-     * @param tokenImage Objeto Imagen a agregar
-     * @param height Altura de la imagen
-     * @param width Ancho de la imagen
-     * @return Un objeto ImageView de la imagen agregada
-     */
-    private ImageView loadImageView(Image tokenImage, Integer height, Integer width){
-        ImageView addTokenImage = new ImageView(tokenImage);
-        addTokenImage.setFitHeight(height);
-        addTokenImage.setFitWidth(width);
-
-        return addTokenImage;
-    }
-
 
     public static void main(String[] args) {
         launch(args);

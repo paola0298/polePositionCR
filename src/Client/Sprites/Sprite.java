@@ -24,7 +24,6 @@ public class Sprite {
     private Double projectedWidth;
     private Double projectedHeight;
 
-
     public Double getProjectedPosX() {
         return projectedPosX;
     }
