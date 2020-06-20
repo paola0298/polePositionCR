@@ -67,6 +67,9 @@ public class Game extends Application {
 
     private GameController controller;
     private final String cwd = System.getProperty("user.dir");
+    private Text textLives;
+
+    private Boolean flag = true;
 
 
     @Override
@@ -99,7 +102,8 @@ public class Game extends Application {
 
         actualPlayer.getCarSelected().setVelocity(0d, 0d);
 
-        Text textLives = new Text("Vidas: " + actualPlayer.getLives()); // TODO cuando se cree el jugador, obtener las vidas del jugador actual
+
+        textLives = new Text("Vidas: " + actualPlayer.getLives()); // TODO cuando se cree el jugador, obtener las vidas del jugador actual
         textLives.setLayoutX(850);
         textLives.setLayoutY(50);
         textLives.getStyleClass().add("text-game");
@@ -132,6 +136,10 @@ public class Game extends Application {
         configureGameLoop();
         gameLoop.start();
         stage.show();
+        stage.setOnCloseRequest(windowEvent -> {
+            System.out.println("Closing");
+            controller.onExit();
+        });
     }
 
     /**
@@ -227,45 +235,18 @@ public class Game extends Application {
                     }
                 }
 
-                //TODO: renderizar los demás sprites
-//                for (Integer i = 0; i < otherPlayers.size(); i++) {
-//                    Player actual = otherPlayers.get(i);
-//                    //System.out.println("Color del carro a ingresar" + actual.getCarSelected().getCarColor());
-//                    Double posX = 0d;
-//                    Double posY = 0d;
-//                    switch (i) {
-//                        case 0 -> {
-//                            posX = 200d;
-//                            posY = 500d;
-//                        }
-//                        case 1 -> {
-//                            posX = 600d;
-//                            posY = 300d;
-//                        }
-//                        case 2 -> {
-//                            posX = 250d;
-//                            posY = 300d;
-//                        }
-//                    }
-//
-//                    String path = "";
-//                    switch (actual.getCarSelected().getCarColor()) {
-//                        case "Rojo" -> path = "/res/CarroRojo.png";
-//                        case "Morado" -> path =  "/res/CarroMorado.png";
-//                        case "Blanco" -> path =  "/res/CarroBlanco.png";
-//                        case "Azul" -> path =  "/res/CarroAzul.png";
-//                    }
-//                    actual.getCarSelected().setPosition(posX, posY);
-//                    actual.getCarSelected().setImage(path, 100, 100);
-//                    actual.getCarSelected().render(context);
-//                }
-//
-//                for (Integer i = 0; i < obstacles.size(); i++) {
-//
-//                }
-//                for (Integer i = 0; i < powerUps.size(); i++) {
-//
-//                }
+
+                // Actualizar la vida del jugador actual
+                // todo actualizar las vidas cuando recibe un disparo y cuando encuentra una vida en el camino
+                actualPlayer.setLives(controller.getPlayerLives());
+                if (laps == 1 && flag) {
+                    actualPlayer.updateLives(false);
+                    controller.updatePlayerInfo(actualPlayer);
+                    System.out.println("Vidas: "+ actualPlayer.getLives());
+                    textLives.setText("Vidas: " + controller.getPlayerLives());
+                    System.out.println("Vidas: "+ controller.getPlayerLives());
+                    flag = false;
+                }
 
                 //Dibujar árboles
                 for (Integer n = startpos + 299; n > startpos; n--) {
@@ -321,6 +302,7 @@ public class Game extends Application {
 
                     //Se obtiene la info de los demás jugadores
                     players = controller.getPlayerList();
+
                 } else {
                     //System.out.println("Delay: " + sendDelay);
                     sendDelay--;
