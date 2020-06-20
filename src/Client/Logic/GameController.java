@@ -1,9 +1,7 @@
 package Client.Logic;
 
 import Client.Gui.Game;
-import Client.Sprites.Car;
-import Client.Sprites.Hole;
-import Client.Sprites.Turbo;
+import Client.Sprites.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,7 +25,7 @@ public class GameController {
     private Integer segmentLength;
     private HashMap<Integer, Hole> holeSprites;
     private HashMap<Integer, Turbo> turboSprites;
-    //private ArrayList<Live> liveSprites;
+    private HashMap<Integer, Live> liveSprites;
 
     /**
      * Constructor de la clase GameController
@@ -37,6 +35,7 @@ public class GameController {
         connection = new Connection("localhost", 8080);
         holeSprites = new HashMap<>();
         turboSprites = new HashMap<>();
+        liveSprites = new HashMap<>();
     }
 
     /**
@@ -134,7 +133,7 @@ public class GameController {
      * Método para obtener la lista de jugadores desde el servidor
      * @return Lista con los jugadores
      */
-    public ArrayList<Player> getPlayerList() {
+    public HashMap<Integer, Player> getPlayerList() {
         ObjectNode request = mapper.createObjectNode();
         request.put("action", "get_players");
 
@@ -178,7 +177,6 @@ public class GameController {
         } catch (JsonProcessingException ex) {
             System.err.println("[Error] Could not connect to server!");
         }
-
     }
 
     /**
@@ -186,25 +184,47 @@ public class GameController {
      * @param players Json con los datos de los jugadores
      * @return Lista con los jugadores
      */
-    private ArrayList<Player> getPlayersArray(JsonNode players) {
-        ArrayList<Player> playersL = new ArrayList<>();
-        for (JsonNode player : players) {
-            Integer pos = player.get("pos").asInt();
-            Integer playerX = player.get("playerX").asInt();
-            Integer lives = player.get("lives").asInt();
-            String carColor = player.get("carColor").textValue();
-
+//    private ArrayList<Player> getPlayersArray(JsonNode players) {
+//        ArrayList<Player> playersL = new ArrayList<>();
+//        for (JsonNode player : players) {
+//            Integer pos = player.get("pos").asInt();
+//            Integer playerX = player.get("playerX").asInt();
+//            Integer lives = player.get("lives").asInt();
+//            String carColor = player.get("carColor").textValue();
+//
+//            if (carColor.equals(actualCarColor)) continue;
+//
+//            Player playerObject = new Player(new Car(carColor));
+//            playerObject.setLives(lives);
+//            playerObject.setPlayerX(playerX.floatValue());
+//            playerObject.setPos(pos);
+//
+//            playersL.add(playerObject);
+//        }
+//
+//        return playersL;
+//    }
+    private HashMap<Integer, Player> getPlayersArray(JsonNode players) {
+        HashMap<Integer, Player> playerHashMap = new HashMap<>();
+        for(JsonNode jsonNode: players) {
+            String carColor = jsonNode.get("carColor").textValue();
             if (carColor.equals(actualCarColor)) continue;
 
-            Player playerObject = new Player(new Car(carColor));
+            Integer pos = jsonNode.get("pos").asInt();
+            Integer playerX = jsonNode.get("playerX").asInt();
+            Integer lives = jsonNode.get("lives").asInt();
+
+            Car playerCar = new Car(carColor);
+            playerCar.setImage("/res/Carro"+carColor+".png", 120, 200);
+            Player playerObject = new Player(playerCar);
             playerObject.setLives(lives);
             playerObject.setPlayerX(playerX.floatValue());
             playerObject.setPos(pos);
 
-            playersL.add(playerObject);
+            playerHashMap.put(pos, playerObject);
         }
 
-        return playersL;
+        return playerHashMap;
     }
 
     /**
@@ -254,6 +274,10 @@ public class GameController {
         return this.turboSprites;
     }
 
+    public HashMap<Integer, Live> getLiveList() {
+        return this.liveSprites;
+    }
+
     public void updateTurbo(Integer id) {
         ObjectNode request = mapper.createObjectNode();
         request.put("action", "update_turbo");
@@ -264,49 +288,6 @@ public class GameController {
         } catch (JsonProcessingException ex) {
             ex.printStackTrace();
         }
-    }
-
-    public HashMap<Integer, Turbo> updateTurboList() {
-        ObjectNode request = mapper.createObjectNode();
-        request.put("action", "update_turbos");
-
-        String data = null;
-        try {
-            data = connection.connect(mapper.writeValueAsString(request));
-        } catch (JsonProcessingException ex) {
-            ex.printStackTrace();
-        }
-
-        if (data == null) return null;
-
-        JsonNode response;
-        try {
-            response = mapper.readTree(data);
-        } catch (JsonProcessingException ex) {
-            ex.printStackTrace();
-            return null;
-        }
-
-        JsonNode turbos = response.get("turbos");
-
-        turboSprites.clear();
-
-        turbos.forEach(jsonNode -> {
-            Turbo turbo = new Turbo();
-
-            Integer id = jsonNode.get("id").asInt();
-            Integer posX = jsonNode.get("posX").asInt();
-            Integer posY = jsonNode.get("posY").asInt();
-            Integer got = jsonNode.get("got").asInt();
-
-            turbo.setId(id);
-            turbo.setPosition(posX.doubleValue(), posY.doubleValue());
-            turbo.setTurboGot(got == 1);
-
-            turboSprites.put(posY, turbo);
-        });
-
-        return  turboSprites;
     }
 
     /**
@@ -323,6 +304,7 @@ public class GameController {
         JsonNode curves = track.get("curves");
         JsonNode holes = data.get("holes");
         JsonNode turbos = data.get("turbos");
+        JsonNode lives = data.get("lives");
 
         for (Integer i = 0; i < length; i++) {
             Line line = new Line();
@@ -347,7 +329,6 @@ public class GameController {
         holes.forEach(jsonNode -> {
 
             Hole hole = new Hole();
-            hole.setImage("/res/hole1.png", 180, 100);
 
             Integer id = jsonNode.get("id").asInt();
             Integer posX = jsonNode.get("posX").asInt();
@@ -361,18 +342,31 @@ public class GameController {
 
         turbos.forEach(jsonNode -> {
             Turbo turbo = new Turbo();
-            turbo.setImage("/res/rayo.png", 150, 150);
+            Integer id = jsonNode.get("id").asInt();
+            Integer posX = jsonNode.get("posX").asInt();
+            Integer posY = jsonNode.get("posY").asInt();
+            Integer taken = jsonNode.get("taken").asInt();
+
+            turbo.setId(id);
+            turbo.setPosition(posX.doubleValue(), posY.doubleValue());
+            turbo.setTaken(taken == 1);
+
+            turboSprites.put(posY, turbo);
+        });
+
+        lives.forEach(jsonNode -> {
+            Live live = new Live();
 
             Integer id = jsonNode.get("id").asInt();
             Integer posX = jsonNode.get("posX").asInt();
             Integer posY = jsonNode.get("posY").asInt();
-            Integer got = jsonNode.get("got").asInt();
+            Integer taken = jsonNode.get("taken").asInt();
 
-            turbo.setId(id);
-            turbo.setPosition(posX.doubleValue(), posY.doubleValue());
-            turbo.setTurboGot(got == 1);
+            live.setId(id);
+            live.setPosition(posX.doubleValue(), posY.doubleValue());
+            live.setTaken(taken == 1);
 
-            turboSprites.put(posY, turbo);
+            liveSprites.put(posY, live);
         });
 
         return trackLines;
@@ -419,7 +413,7 @@ public class GameController {
      */
     public int getPlayerLives() {
         ObjectNode request = mapper.createObjectNode();
-        request.put("action", "get_lives");
+        request.put("action", "get_player_lives");
         request.put("car_color", actualCarColor);
 
         String data;
@@ -467,6 +461,119 @@ public class GameController {
     public void resetTurbos() {
         ObjectNode request = mapper.createObjectNode();
         request.put("action", "reset_turbos");
+
+        try {
+            connection.connect(mapper.writeValueAsString(request));
+        } catch (JsonProcessingException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public HashMap<Integer, Turbo> updateTurboList() {
+        ObjectNode request = mapper.createObjectNode();
+        request.put("action", "get_turbos");
+
+        String data = null;
+        try {
+            data = connection.connect(mapper.writeValueAsString(request));
+        } catch (JsonProcessingException ex) {
+            ex.printStackTrace();
+        }
+
+        if (data == null) return null;
+
+        JsonNode response;
+        try {
+            response = mapper.readTree(data);
+        } catch (JsonProcessingException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+
+        JsonNode turbos = response.get("turbos");
+
+//        turboSprites.clear();
+        HashMap<Integer, Turbo> hashMap = new HashMap<>();
+
+
+        turbos.forEach(jsonNode -> {
+            Turbo turbo = new Turbo();
+            Integer id = jsonNode.get("id").asInt();
+            Integer posX = jsonNode.get("posX").asInt();
+            Integer posY = jsonNode.get("posY").asInt();
+            Integer taken = jsonNode.get("taken").asInt();
+
+            turbo.setId(id);
+            turbo.setPosition(posX.doubleValue(), posY.doubleValue());
+            turbo.setTaken(taken == 1);
+
+            hashMap.put(posY, turbo);
+        });
+
+        return  hashMap;
+    }
+
+    public HashMap<Integer, Live> updateLiveList() {
+        ObjectNode request = mapper.createObjectNode();
+        request.put("action", "get_lives");
+
+        String data = null;
+        try {
+            data = connection.connect(mapper.writeValueAsString(request));
+        } catch (JsonProcessingException ex) {
+            ex.printStackTrace();
+        }
+
+        if (data == null) return null;
+
+        JsonNode response;
+        try {
+            response = mapper.readTree(data);
+        } catch (JsonProcessingException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+
+        JsonNode lives = response.get("lives");
+
+//        liveSprites.clear();
+        HashMap<Integer, Live> hashMap = new HashMap<>();
+
+        lives.forEach(jsonNode -> {
+            Live live = new Live();
+
+            Integer id = jsonNode.get("id").asInt();
+            Integer posX = jsonNode.get("posX").asInt();
+            Integer posY = jsonNode.get("posY").asInt();
+            Integer taken = jsonNode.get("taken").asInt();
+
+            live.setId(id);
+            live.setPosition(posX.doubleValue(), posY.doubleValue());
+            live.setTaken(taken == 1);
+
+//            liveSprites.put(posY, live);
+            hashMap.put(posY, live);
+        });
+
+//        return liveSprites;
+        return hashMap;
+    }
+
+    public void resetLives() {
+        ObjectNode request = mapper.createObjectNode();
+        request.put("action", "reset_lives");
+
+        try {
+            connection.connect(mapper.writeValueAsString(request));
+        } catch (JsonProcessingException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public void updateLive(Integer id) {
+        ObjectNode request = mapper.createObjectNode();
+        request.put("action", "update_live");
+        request.put("live_id", id);
 
         try {
             connection.connect(mapper.writeValueAsString(request));
