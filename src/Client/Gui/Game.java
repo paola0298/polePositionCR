@@ -6,7 +6,6 @@ import Client.Logic.Player;
 import Client.Sprites.Car;
 import Client.Sprites.Hole;
 import Client.Sprites.Turbo;
-import Client.Sprites.Sprite;
 import eu.hansolo.medusa.Gauge;
 import eu.hansolo.medusa.skins.SpaceXSkin;
 import javafx.animation.AnimationTimer;
@@ -157,7 +156,8 @@ public class Game extends Application {
                 if (actualPlayer.getPos() >= lineCount * segmentLength) {
                     actualPlayer.manualUpdatePos(lineCount * segmentLength * -1);
                     laps += 1;
-                    resetHoles();
+                    resetSprites();
+                    controller.resetTurbos();
                 }
 
                 //Evitar que startpos sea menor a cero.
@@ -261,7 +261,8 @@ public class Game extends Application {
                         holes.put(hole.getPosY().intValue(), hole);
                         visibleHoles.add(hole);
                     }
-                    if (turbo != null) {
+                    if (turbo != null && !turbo.getTurboGot()) {
+
                         turbo = (Turbo) line.drawSprite(context, turbo);
                         turbos.put(turbo.getPosY().intValue(), turbo);
                         visibleTurbos.add(turbo);
@@ -307,12 +308,16 @@ public class Game extends Application {
                 if (actualPlayer.isCrashed()) {
                     actualPlayer.decreaseCrashTimeout();
                 }
+                if (actualPlayer.hasTurbo()) {
+                    actualPlayer.decreaseTurboTimeout();
+                }
 
                 //Se actualiza la info del jugador
                 controller.updatePlayerInfo(actualPlayer);
 
                 //Se obtiene la info de los demás jugadores
                 players = controller.getPlayerList();
+                turbos = controller.getTurbosList();
 
                 visibleHoles.clear();
                 visibleTurbos.clear();
@@ -348,30 +353,36 @@ public class Game extends Application {
             System.out.println("Disparar... ");
     }
 
-    public void resetHoles() {
+    public void resetSprites() {
         for(Hole hole: holes.values()) {
             hole.setCarCrashed(false);
             holes.put(hole.getPosY().intValue(), hole);
+        }
+
+        for (Turbo turbo: turbos.values()) {
+            turbo.setTurboGot(false);
+            turbos.put(turbo.getPosY().intValue(), turbo);
         }
     }
 
     public void processCollitions() {
         //Verificar si el jugador choca con un hueco
         for (Hole hole : visibleHoles) {
-            if (!actualPlayer.isCrashed() && actualPlayer.getCarSelected().intersectsProjected(hole)) {
-                if (!hole.carCrashed) {
-                    actualPlayer.crashed();
-                    hole.setCarCrashed(true);
-                    holes.put(hole.getPosY().intValue(), hole);
-                }
-            }
+            if (actualPlayer.isCrashed() || !actualPlayer.getCarSelected().intersectsProjected(hole) || hole.carCrashed)
+                continue;
+            actualPlayer.crashed();
+            hole.setCarCrashed(true);
+            holes.put(hole.getPosY().intValue(), hole);
         }
-
         //Verificar si el jugador toma un turbo
         for (Turbo turbo : visibleTurbos) {
-            if (actualPlayer.getCarSelected().intersectsProjected(turbo)) {
-                System.out.println("Aceleró!");
-            }
+            if (!actualPlayer.getCarSelected().intersectsProjected(turbo) || turbo.getTurboGot())
+                continue;
+            actualPlayer.Turbo();
+            turbo.setTurboGot(true);
+            turbos.put(turbo.getPosY().intValue(), turbo);
+
+            controller.updateTurbo(turbo.getId());
         }
     }
 
@@ -403,7 +414,7 @@ public class Game extends Application {
         gauge.setValue(0d); //deafult position of needle on gauage
         gauge.setAnimated(true);
         gauge.setThresholdColor(Color.RED);  //color will become red if it crosses thereshold value
-        gauge.setThreshold(168);
+        gauge.setThreshold(135);
         gauge.setMinValue(0d);
         gauge.setMaxValue(200d);
 
