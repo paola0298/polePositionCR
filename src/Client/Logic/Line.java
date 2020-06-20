@@ -1,5 +1,6 @@
 package Client.Logic;
 
+import Client.Sprites.Sprite;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 
@@ -17,11 +18,11 @@ public class Line {
     private static Integer roadWidth;
 
     /**
-     * TODO hacer documentación
-     * @param cameraDepth
-     * @param width
-     * @param height
-     * @param roadWidth
+     * Método para setear los valores generales de las líneas
+     * @param cameraDepth Profundidad de campo de la cámara
+     * @param width Ancho de la ventana
+     * @param height Alto de la ventana
+     * @param roadWidth Ancho de la pista
      */
     public static void setValues(Float cameraDepth, Integer width, Integer height, Integer roadWidth) {
         Line.cameraDepth = cameraDepth;
@@ -31,7 +32,7 @@ public class Line {
     }
 
     /**
-     * TODO hacer documentacion
+     * Constructor de la clase Line
      */
     public Line() {
         curve = x = y = z = 0f;
@@ -40,10 +41,11 @@ public class Line {
     }
 
     /**
-     * TODO hacer documentacion
-     * @param camX
-     * @param camY
-     * @param camZ
+     * Método utilizado para convertir las coordenadas 3d a 2d para poder visualizar
+     * correctamente las líneas en el canvas 2d
+     * @param camX Posición X de la cámara
+     * @param camY Posición Y de la cámara
+     * @param camZ Posición Z de la cámara
      */
     public void project(Integer camX, Integer camY, Integer camZ) {
         scale = cameraDepth / (z - camZ);
@@ -54,9 +56,9 @@ public class Line {
     }
 
     /**
-     * TODO hacer documentacion
-     * @param context
-     * @param img
+     * Método para dibujar un sprite en una posición dada de la pista
+     * @param context Contexto gráfico para dibujar en canvas
+     * @param img Sprite a dibujar.
      */
     public void drawSprite(GraphicsContext context, Image img) {
 //        Sprite sprite = new Sprite();
@@ -80,5 +82,33 @@ public class Line {
             return;
         }
         context.drawImage(img, destX, destY, destW, destH);
+    }
+
+    public Sprite drawSprite(GraphicsContext context, Sprite sprite) {
+        Double w = sprite.getImage().getWidth();
+        Double h = sprite.getImage().getHeight();
+
+        Float destX = X + scale * spriteX * width / 2;
+        Float destY = Y + 4;
+        Float destW = w.floatValue() * W / 266f;
+        Float destH = h.floatValue() * W / 266f;
+
+        destX += destW * spriteX;
+        destY += (destH * -1);
+
+        float clipH = destY + destH - clip;
+        if (clipH < 0) clipH = 0;
+
+        if (clipH >= destH) {
+            return sprite;
+        }
+
+        context.drawImage(sprite.getImage(), destX, destY, destW, destH);
+
+        sprite.setProjectedPosX(destX.doubleValue());
+        sprite.setProjectedPosY(destY.doubleValue());
+        sprite.setProjectedWidth(destW.doubleValue());
+        sprite.setProjectedHeight(destH.doubleValue());
+        return sprite;
     }
 }

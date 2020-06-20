@@ -82,7 +82,7 @@ public class Connection {
             return null;
         }
 
-        var inputData = new byte[2048];
+        var inputData = new byte[4086];
 
         try {
             var bytesRead = inputStream.read(inputData);

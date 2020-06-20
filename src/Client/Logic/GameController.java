@@ -2,12 +2,15 @@ package Client.Logic;
 
 import Client.Gui.Game;
 import Client.Sprites.Car;
+import Client.Sprites.Hole;
+import Client.Sprites.Turbo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Clase que controla el juego
@@ -18,12 +21,13 @@ public class GameController {
 
     private final ObjectMapper mapper;
     private final Connection connection;
-
-    private Integer segmentLength;
-
     private static GameController instance;
 
     private String actualCarColor;
+    private Integer segmentLength;
+    private HashMap<Integer, Hole> holeSprites;
+    private HashMap<Integer, Turbo> turboSprites;
+    //private ArrayList<Live> liveSprites;
 
     /**
      * Constructor de la clase GameController
@@ -31,6 +35,8 @@ public class GameController {
     public GameController() {
         mapper = new ObjectMapper();
         connection = new Connection("localhost", 8080);
+        holeSprites = new HashMap<>();
+        turboSprites = new HashMap<>();
     }
 
     /**
@@ -237,7 +243,15 @@ public class GameController {
             return null;
         }
 
-        return parseGameInfo(response.get("track"));
+        return parseGameInfo(response);
+    }
+
+    public HashMap<Integer, Hole> getHolesList() {
+        return this.holeSprites;
+    }
+
+    public HashMap<Integer, Turbo> getTurbosList() {
+        return this.turboSprites;
     }
 
     /**
@@ -246,11 +260,14 @@ public class GameController {
      * @return Lista con los elementos de la pista
      */
     private ArrayList<Line> parseGameInfo(JsonNode data) {
-        ArrayList<Line> track = new ArrayList<>();
-        Integer length = data.get("length").asInt();
-        System.out.println(data.toPrettyString());
+        ArrayList<Line> trackLines = new ArrayList<>();
 
-        JsonNode curves = data.get("curves");
+        JsonNode track = data.get("track");
+        Integer length = track.get("length").asInt();
+
+        JsonNode curves = track.get("curves");
+        JsonNode holes = data.get("holes");
+        JsonNode turbos = data.get("turbos");
 
         for (Integer i = 0; i < length; i++) {
             Line line = new Line();
@@ -261,23 +278,54 @@ public class GameController {
             if (i%20 == 0) {
                 line.spriteX = -3.5f;
             }
+
             //Usar para cuestas
 //            if (i > 700) {
 //                Double value = Math.sin(i / 30.0);
 //                line.y = value.floatValue() * camDefaultHeight;
 //            }
 
-            track.add(line);
+
+            trackLines.add(line);
         }
 
-        return track;
+        holes.forEach(jsonNode -> {
+
+            Hole hole = new Hole();
+            hole.setImage("/res/hole1.png", 180, 100);
+
+            Integer id = jsonNode.get("id").asInt();
+            Integer posX = jsonNode.get("posX").asInt();
+            Integer posY = jsonNode.get("posY").asInt();
+
+            hole.setId(id);
+            hole.setPosition(posX.doubleValue(), posY.doubleValue());
+
+            holeSprites.put(posY, hole);
+        });
+
+        turbos.forEach(jsonNode -> {
+            Turbo turbo = new Turbo();
+            turbo.setImage("/res/rayo.png", 150, 150);
+
+            Integer id = jsonNode.get("id").asInt();
+            Integer posX = jsonNode.get("posX").asInt();
+            Integer posY = jsonNode.get("posY").asInt();
+
+            turbo.setId(id);
+            turbo.setPosition(posX.doubleValue(), posY.doubleValue());
+
+            turboSprites.put(posY, turbo);
+        });
+
+        return trackLines;
     }
 
     /**
-     * TODO hacer documentación
-     * @param i
-     * @param ranges
-     * @return
+     * Método para verificar si un índice dado está dentro de algún rango en una lista
+     * @param i Índice actual
+     * @param ranges Lista de rangos a verificar
+     * @return El valor del rango si i pertenece a ese rango, 0 en caso contrario
      */
     private Float checkInRange(Integer i, JsonNode ranges) {
         for (JsonNode curve : ranges) {
@@ -352,8 +400,8 @@ public class GameController {
     }
 
     /**
-     * TODO hacer documentación
-     * @param game
+     * Método para setear la instancia de Game
+     * @param game Instancia actual de game
      */
     public void setGame(Game game) {
         this.game = game;

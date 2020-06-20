@@ -19,6 +19,44 @@ public class Sprite {
     private Integer height;
     private final String cwd = System.getProperty("user.dir");
 
+    private Double projectedPosX;
+    private Double projectedPosY;
+    private Double projectedWidth;
+    private Double projectedHeight;
+
+
+    public Double getProjectedPosX() {
+        return projectedPosX;
+    }
+
+    public void setProjectedPosX(Double projectedPosX) {
+        this.projectedPosX = projectedPosX;
+    }
+
+    public Double getProjectedPosY() {
+        return projectedPosY;
+    }
+
+    public void setProjectedPosY(Double projectedPosY) {
+        this.projectedPosY = projectedPosY;
+    }
+
+    public Double getProjectedWidth() {
+        return projectedWidth;
+    }
+
+    public void setProjectedWidth(Double projectedWidth) {
+        this.projectedWidth = projectedWidth;
+    }
+
+    public Double getProjectedHeight() {
+        return projectedHeight;
+    }
+    public void setProjectedHeight(Double projectedHeight) {
+        this.projectedHeight = projectedHeight;
+    }
+
+
     /**
      * Constructor de la clase
      */
@@ -36,9 +74,13 @@ public class Sprite {
      * @param width Ancho de la imagen
      */
     public void setImage(String path, Integer height, Integer width) {
-        this.image = imageLoader(cwd.replaceAll("\\\\", "/") + path);
+        this.image = imageLoader(cwd.replaceAll("\\\\", "/") + path, height.doubleValue(), width.doubleValue());
         this.height = height;
         this.width = width;
+    }
+
+    public void setImage(Image image) {
+        this.image = image;
     }
 
     /**
@@ -152,6 +194,14 @@ public class Sprite {
         return new Rectangle2D(this.posX, this.posY, this.width, this.height);
     }
 
+    public Boolean intersectsProjected(Sprite other) {
+        return this.getProjectedBoundary().intersects(other.getProjectedBoundary());
+    }
+
+    public Rectangle2D getProjectedBoundary() {
+        return new Rectangle2D(this.projectedPosX, this.projectedPosY, this.projectedWidth, this.projectedHeight);
+    }
+
     /**
      * Método para conocer si un Sprite choca con otro
      * @param s otra sprite
@@ -172,14 +222,13 @@ public class Sprite {
     }
 
     /**
-     * Método para cargar una imagen
      * @param path Ruta de la imagen
      * @return El objeto de la imagen creada
      */
-    private Image imageLoader(String path){
+    private Image imageLoader(String path, Double height, Double width){
         try{
             FileInputStream i = new FileInputStream(path);
-            return new Image(i);
+            return new Image(i, width, height, false, false);
         }catch (FileNotFoundException e){
             System.out.println("Couldn't load images!");
         }
