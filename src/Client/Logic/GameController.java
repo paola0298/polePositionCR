@@ -30,7 +30,7 @@ public class GameController {
      */
     public GameController() {
         mapper = new ObjectMapper();
-        connection = new Connection("192.168.0.18", 8080);
+        connection = new Connection("localhost", 8080);
     }
 
     /**
@@ -291,6 +291,53 @@ public class GameController {
         }
 
         return 0f;
+    }
+
+    /**
+     * Método que se llama al cerrar la ventana de juego
+     */
+    public void onExit() {
+        ObjectNode request = mapper.createObjectNode();
+        request.put("action", "exit");
+        request.put("car_color", actualCarColor);
+
+        try {
+            connection.connect(mapper.writeValueAsString(request));
+        } catch (JsonProcessingException ex) {
+            System.err.println("[Error] Could not connect to server!");
+        }
+    }
+
+    /**
+     * Metodo para obtener las vidas del jugador actual
+     * @return
+     */
+    public int getPlayerLives() {
+        ObjectNode request = mapper.createObjectNode();
+        request.put("action", "get_lives");
+        request.put("car_color", actualCarColor);
+
+        String data;
+        try {
+            data = connection.connect(mapper.writeValueAsString(request));
+        } catch (JsonProcessingException ex) {
+            ex.printStackTrace();
+            return -1;
+        }
+
+        if (data == null) {
+            return -1;
+        }
+
+        JsonNode response;
+        try {
+            response = mapper.readTree(data);
+        } catch (JsonProcessingException ex) {
+            ex.printStackTrace();
+            return -1;
+        }
+
+        return response.get("lives").asInt();
     }
 
     /**
