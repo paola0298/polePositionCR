@@ -30,7 +30,7 @@ public class GameController {
      */
     public GameController() {
         mapper = new ObjectMapper();
-        connection = new Connection("localhost", 8080);
+        connection = new Connection("192.168.0.18", 8080);
     }
 
     /**
@@ -213,9 +213,9 @@ public class GameController {
      * Método que hace una solicitud al servidor para obtener la pista
      * @return Lista con los elementos de la pista
      */
-    public ArrayList<Line> getTrack() {
+    public ArrayList<Line> getGameInfo() {
         ObjectNode request = mapper.createObjectNode();
-        request.put("action", "get_track");
+        request.put("action", "get_game_info");
 
         String data;
         try {
@@ -237,7 +237,7 @@ public class GameController {
             return null;
         }
 
-        return parseTrack(response.get("track"));
+        return parseGameInfo(response.get("track"));
     }
 
     /**
@@ -245,7 +245,7 @@ public class GameController {
      * @param data Json con la información de la pista
      * @return Lista con los elementos de la pista
      */
-    private ArrayList<Line> parseTrack(JsonNode data) {
+    private ArrayList<Line> parseGameInfo(JsonNode data) {
         ArrayList<Line> track = new ArrayList<>();
         Integer length = data.get("length").asInt();
         System.out.println(data.toPrettyString());

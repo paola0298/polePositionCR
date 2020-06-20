@@ -34,7 +34,8 @@ public class Game extends Application {
     private Integer lineCount;
 
     //Para evitar sobrecargar el servidor.
-    private final Integer defaultSendDelay = 8;
+//    private final Integer defaultSendDelay = 8;
+    private final Integer defaultSendDelay = 1;
     private Integer sendDelay = defaultSendDelay;
 
     private Player actualPlayer;
@@ -119,7 +120,7 @@ public class Game extends Application {
 
         scene.getStylesheets().add("file:///" + cwd.replaceAll("\\\\", "/") + "/res/style.css");
 
-        this.trackLines = controller.getTrack();
+        this.trackLines = controller.getGameInfo();
 
         if (trackLines == null) {
             Platform.exit();
@@ -158,10 +159,10 @@ public class Game extends Application {
                 Integer startpos = (actualPlayer.getPos() / segmentLength);
 
                 //Esperar a otros jugadores para empezar
-                //if (otherPlayers.size() > 0) {
-                //    waitText.setText("");
+                if (players.size() > 0) {
+                    waitText.setText("");
                     manageInput(input);
-                //}
+                }
 
                 Float x = 0f, dx = 0f;
                 Double maxY = height.doubleValue();
