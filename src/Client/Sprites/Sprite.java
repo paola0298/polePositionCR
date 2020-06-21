@@ -23,6 +23,15 @@ public class Sprite {
     private Double projectedPosY;
     private Double projectedWidth;
     private Double projectedHeight;
+    private Boolean projectionValid;
+
+    public Boolean isProjectionValid() {
+        return this.projectionValid;
+    }
+
+    public void setProjectionValid(Boolean valid) {
+        this.projectionValid = valid;
+    }
 
     public Double getProjectedPosX() {
         return projectedPosX;
