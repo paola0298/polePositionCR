@@ -38,6 +38,11 @@ public class Car extends Sprite{
         gc.drawImage(getImage(), getPosX()  + offsetX, getPosY() + offsetY);
     }
 
+    /**
+     * Método para conocer si un Sprite choca con otro
+     * @param s otra sprite
+     * @return si intersecan
+     */
     @Override
     public Boolean intersects(Sprite s) {
         return this.getBoundary().intersects(s.getProjectedBoundary());

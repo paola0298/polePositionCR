@@ -182,10 +182,18 @@ public class GameController {
         }
     }
 
+    /**
+     * Método para obtener el jugador actual
+     * @return Retorna un objeto tipo Player del jugador actual
+     */
     public Player getActualPlayer() {
         return actualPlayer;
     }
 
+    /**
+     * Método que coloca el jugador actual
+     * @param player Recibe un objeto tipo Player
+     */
     public void setActualPlayer(Player player) {
         actualPlayer = player;
     }
@@ -284,18 +292,34 @@ public class GameController {
         return parseGameInfo(response);
     }
 
+    /**
+     * Método para obtener un diccionario con los huecos desde el servidor
+     * @return Retorna un diccionario con los huecos como valores y las llaves la posición en y
+     */
     public HashMap<Integer, Hole> getHolesList() {
         return this.holeSprites;
     }
 
+    /**
+     * Método para obtener un diccionario con los turbos desde el servidor
+     * @return Retorna un diccionario con los turbos como valores y las llaves la posición en y
+     */
     public HashMap<Integer, Turbo> getTurbosList() {
         return this.turboSprites;
     }
 
+    /**
+     * Método para obtener un diccionario con los turbos desde el servidor
+     * @return Retorna un diccionario con los turbos como valores y las llaves la posición en y
+     */
     public HashMap<Integer, Live> getLiveList() {
         return this.liveSprites;
     }
 
+    /**
+     * Método para actualizar el estado de un turbo, si esta disponible o no
+     * @param id Recibe el id del turbo
+     */
     public void updateTurbo(Integer id) {
         ObjectNode request = mapper.createObjectNode();
         request.put("action", "update_turbo");
@@ -429,7 +453,7 @@ public class GameController {
      * Metodo para obtener las vidas del jugador actual
      * @return Cantidad de vidas del jugador
      */
-    public int getPlayerLives() {
+    public Integer getPlayerLives() {
         ObjectNode request = mapper.createObjectNode();
         request.put("action", "get_player_lives");
         request.put("car_color", actualCarColor);
@@ -457,7 +481,11 @@ public class GameController {
         return response.get("lives").asInt();
     }
 
-    public int getPlayerPoints() {
+    /**
+     * Método para obtener los puntos del jugador del jugador actual
+     * @return Retorna un entero con los puntos del jugador
+     */
+    public Integer getPlayerPoints() {
         ObjectNode request = mapper.createObjectNode();
         request.put("action", "get_points");
         request.put("car_color", actualCarColor);
@@ -504,6 +532,9 @@ public class GameController {
         this.game = game;
     }
 
+    /**
+     * Método que coloca todos los turbos como disponibles
+     */
     public void resetTurbos() {
         ObjectNode request = mapper.createObjectNode();
         request.put("action", "reset_turbos");
@@ -515,6 +546,10 @@ public class GameController {
         }
     }
 
+    /**
+     * Método para obtener los turbos del servidor
+     * @return Retorna un diccionario con los turbos como valores y las llaves la posición en y
+     */
     public HashMap<Integer, Turbo> updateTurboList() {
         ObjectNode request = mapper.createObjectNode();
         request.put("action", "get_turbos");
@@ -559,6 +594,10 @@ public class GameController {
         return  hashMap;
     }
 
+    /**
+     * Método para obtener las vidas del servidor
+     * @return Retorna un diccionario con los turbos como valores y las llaves la posición en y
+     */
     public HashMap<Integer, Live> updateLiveList() {
         ObjectNode request = mapper.createObjectNode();
         request.put("action", "get_lives");
@@ -605,6 +644,9 @@ public class GameController {
         return hashMap;
     }
 
+    /**
+     * Método para colocar todas las vidas como disponibles
+     */
     public void resetLives() {
         ObjectNode request = mapper.createObjectNode();
         request.put("action", "reset_lives");
@@ -616,6 +658,10 @@ public class GameController {
         }
     }
 
+    /**
+     * Método para colocar una vida como no disponible
+     * @param id Identificador de la vida a modificar
+     */
     public void updateLive(Integer id) {
         ObjectNode request = mapper.createObjectNode();
         request.put("action", "update_live");
@@ -628,6 +674,9 @@ public class GameController {
         }
     }
 
+    /**
+     * Método que finaliza el juego en el servidor
+     */
     public void finishGame() {
         ObjectNode request = mapper.createObjectNode();
         request.put("action", "finish_game");
@@ -639,6 +688,10 @@ public class GameController {
         }
     }
 
+    /**
+     * Método que le consulta al servidor si el juego está finalizado
+     * @return Retorna un booleano indicando el resultado
+     */
     public Boolean isGameFinished() {
         ObjectNode request = mapper.createObjectNode();
         request.put("action", "is_game_finished");
@@ -667,6 +720,10 @@ public class GameController {
         return gameFinished;
     }
 
+    /**
+     * Método para obtener el booleano que indica si el juego se ha terminado
+     * @return Boolenao true si el juego ya se terminó, false en caso contrario
+     */
     public Boolean getGameFinished() {
         return this.gameFinished;
     }

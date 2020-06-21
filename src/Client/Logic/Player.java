@@ -214,16 +214,26 @@ public class Player {
         }
     }
 
+    /**
+     * Método para obtener el booleano que indica si el jugador ha chocado
+     * @return Booleano true si el jugador a chocado, false en caso contrarop
+     */
     public Boolean isCrashed() {
         return this.isCrashed;
     }
 
+    /**
+     * Método que se llama cuando el jugador ha chocado
+     */
     public void crashed() {
         this.isCrashed = true;
         this.hasTurbo = false;
         carSelected.setVelocity(10d, 0d);
     }
 
+    /**
+     * Método que decrementa el tiempo que el carro tiene que esperar luego de chocar
+     */
     public void decreaseCrashTimeout() {
         this.crashTimeout--;
 
@@ -233,16 +243,26 @@ public class Player {
         }
     }
 
+    /**
+     * Método que actualiza la información del jugador cuando toma un turbo
+     */
     public void Turbo() {
         this.hasTurbo = true;
         updatePoints(2);
         this.turboTimeout = turboDefaultTimeout;
     }
 
+    /**
+     * Método que indica si el jugador tiene un turbo
+     * @return Booleano true si el jugador tiene un turbo, false en caso contrario
+     */
     public Boolean hasTurbo() {
         return this.hasTurbo;
     }
 
+    /**
+     * Método que decrementa el tiempo que está disponible el turbo en el jugador
+     */
     public void decreaseTurboTimeout() {
         this.turboTimeout--;
 
@@ -258,6 +278,9 @@ public class Player {
                 "]";
     }
 
+    /**
+     * Método que se llama cuando el usuario toma una vida
+     */
     public void gotLive() {
         this.lives++;
         this.updatePoints(3);
@@ -267,6 +290,10 @@ public class Player {
         }
     }
 
+    /**
+     * Método para colocar los puntos del jugador
+     * @param points Nuevos puntos del jugador
+     */
     public void setPoints(Integer points) {
         this.points = points;
     }

@@ -67,16 +67,16 @@ public class Line {
         Double w = img.getWidth();
         Double h = img.getHeight();
 
-        float destX = X + scale * spriteX * width / 2;
-        float destY = Y + 4;
-        float destW = w.floatValue() * W / 266f;
-        float destH = h.floatValue() * W / 266f;
+        Float destX = X + scale * spriteX * width / 2;
+        Float destY = Y + 4;
+        Float destW = w.floatValue() * W / 266f;
+        Float destH = h.floatValue() * W / 266f;
 
         destX += destW * spriteX;
         destY += destH * -1;
 
-        float clipH = destY + destH - clip;
-        if (clipH < 0) clipH = 0;
+        Float clipH = destY + destH - clip;
+        if (clipH < 0) clipH = 0f;
 
         if (clipH >= destH) {
             return;
@@ -84,6 +84,13 @@ public class Line {
         context.drawImage(img, destX, destY, destW, destH);
     }
 
+    /**
+     * Método utilizado para dibujar un sprite según su posición y tamaño
+     * @param context Contexto gráfico para dibujar en canvas
+     * @param sprite El sprite a dibujar
+     * @param img Imagen del sprite
+     * @return Sprite con datos de proyección actualizados
+     */
     public Sprite drawSprite(GraphicsContext context, Sprite sprite, Image img) {
         Double w = img.getWidth();
         Double h = img.getHeight();
@@ -96,9 +103,8 @@ public class Line {
         destX += destW * spriteX;
         destY += (destH * -1);
 
-        float clipH = destY + destH - clip;
-        if (clipH < 0) clipH = 0;
-
+        Float clipH = destY + destH - clip;
+        if (clipH < 0) clipH = 0f;
 
         if (clipH >= destH) {
             sprite.setProjectionValid(false);

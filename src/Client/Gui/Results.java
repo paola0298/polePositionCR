@@ -39,6 +39,9 @@ public class Results extends Application {
         mainLayout.getStyleClass().add("results-background");
     }
 
+    /**
+     * Método que carga el pane donde se muestran los resultados
+     */
     private void showResults() {
         Text resultsText = new Text("Resultados");
         HashMap<Integer, Player> players = controller.getPlayerList();
@@ -87,10 +90,6 @@ public class Results extends Application {
 
     }
 
-    public static void main(String[] args) {
-        launch(args);
-    }
-
     /**
      * @param path Ruta de la imagen
      * @return El objeto de la imagen creada
@@ -121,6 +120,9 @@ public class Results extends Application {
         return addTokenImage;
     }
 
+    /**
+     * Método que lanza la aplicación
+     */
     public static void show() {
         new Results().start(new Stage());
     }

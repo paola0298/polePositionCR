@@ -25,41 +25,82 @@ public class Sprite {
     private Double projectedHeight;
     private Boolean projectionValid;
 
+    /**
+     * Método para saber si el sprite actual tiene una proyección en el canvas válida.
+     * @return True si tiene una proyección válida, False en caso contrario.
+     */
     public Boolean isProjectionValid() {
         return this.projectionValid;
     }
 
+    /**
+     * Método para definir si la proyección del sprite actual es válida.
+     * @param valid True si es válida, False en caso contrario.
+     */
     public void setProjectionValid(Boolean valid) {
         this.projectionValid = valid;
     }
 
+    /**
+     * Método que devuelve la posición proyectada en X
+     * @return Un entero con la posición proyectada en X
+     */
     public Double getProjectedPosX() {
         return projectedPosX;
     }
 
+    /**
+     * Método para colocar la posición proyectada en X
+     * @param projectedPosX nueva posición proyectada en X
+     */
     public void setProjectedPosX(Double projectedPosX) {
         this.projectedPosX = projectedPosX;
     }
 
+    /**
+     * Método que devuelve la posición proyectada en Y
+     * @return Un entero con la posición proyectada en Y
+     */
     public Double getProjectedPosY() {
         return projectedPosY;
     }
 
+    /**
+     * Método para colocar la posición proyectada en Y
+     * @param projectedPosY nueva posición proyectada en Y
+     */
     public void setProjectedPosY(Double projectedPosY) {
         this.projectedPosY = projectedPosY;
     }
 
+    /**
+     * Método para obtener el ancho del sprite proyectado
+     * @return Ancho del sprite
+     */
     public Double getProjectedWidth() {
         return projectedWidth;
     }
 
+    /**
+     * Método para colocar el ancho del sprite proyectado
+     * @param projectedWidth  Ancho del sprite
+     */
     public void setProjectedWidth(Double projectedWidth) {
         this.projectedWidth = projectedWidth;
     }
 
+    /**
+     * Método para obtener el alto del sprite proyectado
+     * @return Altura del sprite
+     */
     public Double getProjectedHeight() {
         return projectedHeight;
     }
+
+    /**
+     * Método para colocar la altura proyectada del sprite
+     * @param projectedHeight Altura del sprite
+     */
     public void setProjectedHeight(Double projectedHeight) {
         this.projectedHeight = projectedHeight;
     }
@@ -87,6 +128,10 @@ public class Sprite {
         this.width = width;
     }
 
+    /**
+     * Método para colocar la imagen del sprite
+     * @param image Imagen del sprite
+     */
     public void setImage(Image image) {
         this.image = image;
     }
@@ -195,17 +240,26 @@ public class Sprite {
     }
 
     /**
-     * TODO hacer documentación
+     * Método para obtener los boundaries del sprite
      * @return los boundaries del sprite
      */
     public Rectangle2D getBoundary() {
         return new Rectangle2D(this.posX, this.posY, this.width, this.height);
     }
 
+    /**
+     * Método para conocer si el sprite actual interseca con otro
+     * @param other Sprite con el que se desea saber si hay intersección
+     * @return True si hay intersección, False en caso contrario
+     */
     public Boolean intersectsProjected(Sprite other) {
         return this.getProjectedBoundary().intersects(other.getProjectedBoundary());
     }
 
+    /**
+     * Método para obtener los boundaries proyectados del sprite
+     * @return Boundaries del sprite
+     */
     public Rectangle2D getProjectedBoundary() {
         return new Rectangle2D(this.projectedPosX, this.projectedPosY, this.projectedWidth, this.projectedHeight);
     }

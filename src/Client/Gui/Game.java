@@ -410,6 +410,9 @@ public class Game extends Application {
         };
     }
 
+    /**
+     * Llamada a la ventana donde se muestran los resultados de la carrera
+     */
     private void showResults() {
         gameLoop.stop();
         controller.setActualPlayer(actualPlayer);
@@ -445,6 +448,9 @@ public class Game extends Application {
             System.out.println("Disparar... ");
     }
 
+    /**
+     * Método que resetea el estado de los sprites, de tomados a no tomados
+     */
     public void resetSprites() {
         for(Hole hole: holes.values()) {
             hole.setCarCrashed(false);
@@ -462,6 +468,9 @@ public class Game extends Application {
         }
     }
 
+    /**
+     * Método que procesa las colisiciones entre los sprites
+     */
     public void processCollitions() {
         Car playerCar = actualPlayer.getCarSelected();
 

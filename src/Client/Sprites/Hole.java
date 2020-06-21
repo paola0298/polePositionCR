@@ -15,14 +15,26 @@ public class Hole extends Sprite{
         carCrashed = false;
     }
 
+    /**
+     * Método para desactivar el hueco para el jugador actual, hasta la siguiente vuelta
+     * @param carCrashed Booleano, true si se ha chocado, false en caso contrario
+     */
     public void setCarCrashed(Boolean carCrashed) {
         this.carCrashed = carCrashed;
     }
 
+    /**
+     * Método para obtener el id del hueco
+     * @return Retorna un entero con el identificador del juego
+     */
     public Integer getId() {
         return id;
     }
 
+    /**
+     * Método para colocar el identificador del hueco
+     * @param id Recibe el identificador
+     */
     public void setId(Integer id) {
         this.id = id;
     }
