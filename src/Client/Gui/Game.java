@@ -65,6 +65,7 @@ public class Game extends Application {
     private AnimationTimer gameLoop;
 
     private double time = 0d;
+    private Boolean playerWon;
 
     private Image treeImage;
     private Image holeImage;
@@ -89,6 +90,7 @@ public class Game extends Application {
         controller = GameController.getInstance();
         controller.setGame(this);
         controller.setValues(segmentLength);
+        playerWon = false;
 
         loadPlayer();
 
@@ -204,6 +206,8 @@ public class Game extends Application {
 
                     //TODO: arreglar cuando termina el juego.
                     if (laps == 3) {
+                        actualPlayer.updatePoints(2000);
+                        playerWon = true;
                         controller.finishGame();
                     }
                 }
@@ -377,6 +381,9 @@ public class Game extends Application {
                     lives = controller.updateLiveList();
 
                     if (controller.isGameFinished()) {
+                        if (!playerWon) {
+                            actualPlayer.updatePoints(1000);
+                        }
                         showResults();
                     }
 
