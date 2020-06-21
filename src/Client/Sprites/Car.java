@@ -38,4 +38,8 @@ public class Car extends Sprite{
         gc.drawImage(getImage(), getPosX()  + offsetX, getPosY() + offsetY);
     }
 
+    @Override
+    public Boolean intersects(Sprite s) {
+        return this.getBoundary().intersects(s.getProjectedBoundary());
+    }
 }

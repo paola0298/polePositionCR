@@ -64,7 +64,7 @@ public class Game extends Application {
     private Image background;
     private AnimationTimer gameLoop;
 
-    private long time;
+    private double time = 0d;
 
     private Image treeImage;
     private Image holeImage;
@@ -75,6 +75,7 @@ public class Game extends Application {
     private final String cwd = System.getProperty("user.dir");
     private Text textLives;
     private Text pointsText;
+    private Text timeText;
 
     private Integer sendDelay;
     private final Integer defaultSendDelay = 2;
@@ -135,6 +136,11 @@ public class Game extends Application {
         pointsText.setLayoutY(50);
         pointsText.setLayoutX(420);
         pointsText.getStyleClass().add("text-game");
+
+        timeText = new Text("Tiempo: " + gameInfo.getTime().intValue() + " s");
+        timeText.setLayoutY(70);
+        timeText.setLayoutX(420);
+        timeText.getStyleClass().add("text-game");
 
         background = imageLoader(cwd.replaceAll("\\\\", "/") + "/res/mountain.png", 340d, 1024d);
 
@@ -296,7 +302,6 @@ public class Game extends Application {
 
                     Turbo turbo = turbos.get(n);
                     if (turbo != null && !turbo.isTaken()) {
-
                         turbo = (Turbo) line.drawSprite(context, turbo, turboImage);
                         turbos.put(turbo.getPosY().intValue(), turbo);
                         visibleTurbos.add(turbo);
@@ -370,9 +375,12 @@ public class Game extends Application {
 
                 double elapsedTime = (System.nanoTime() - prevTime) / 1E9;
                 gameInfo.updateTime(elapsedTime);
+                time += elapsedTime;
+                timeText.setText("Tiempo: " + gameInfo.getTime().intValue() + " s");
 
-                if ((gameInfo.getTime().intValue() % 10) == 0) {
+                if (time >= 10d) {
                     actualPlayer.updatePoints(1);
+                    time = 0d;
                 }
             }
         };
@@ -424,32 +432,35 @@ public class Game extends Application {
     }
 
     public void processCollitions() {
+        Car playerCar = actualPlayer.getCarSelected();
+
         //Verificar si el jugador choca con un hueco
         for (Hole hole : visibleHoles) {
-            if (actualPlayer.isCrashed() || !actualPlayer.getCarSelected().intersectsProjected(hole) || hole.carCrashed)
-                continue;
-            actualPlayer.crashed();
-            hole.setCarCrashed(true);
-            holes.put(hole.getPosY().intValue(), hole);
+            if (playerCar.intersects(hole) && !actualPlayer.isCrashed() && !hole.carCrashed) {
+                actualPlayer.crashed();
+                hole.setCarCrashed(true);
+                holes.put(hole.getPosY().intValue(), hole);
+            }
         }
+
         //Verificar si el jugador toma un turbo
         for (Turbo turbo : visibleTurbos) {
-            if (!actualPlayer.getCarSelected().intersectsProjected(turbo) || turbo.isTaken())
-                continue;
-            actualPlayer.Turbo();
-            turbo.setTaken(true);
-            turbos.put(turbo.getPosY().intValue(), turbo);
-            controller.updateTurbo(turbo.getId());
+            if (playerCar.intersects(turbo) && !turbo.isTaken()) {
+                actualPlayer.Turbo();
+                turbo.setTaken(true);
+                turbos.put(turbo.getPosY().intValue(), turbo);
+                controller.updateTurbo(turbo.getId());
+            }
         }
 
         //Verificar si el jugador toma una vida
         for (Live live: visibleLives) {
-            if (!actualPlayer.getCarSelected().intersectsProjected(live) || live.isTaken())
-                continue;
-            actualPlayer.gotLive();
-            live.setTaken(true);
-            lives.put(live.getPosY().intValue(), live);
-            controller.updateLive(live.getId());
+            if (playerCar.intersects(live) && !live.isTaken()) {
+                actualPlayer.gotLive();
+                live.setTaken(true);
+                lives.put(live.getPosY().intValue(), live);
+                controller.updateLive(live.getId());
+            }
         }
     }
 
