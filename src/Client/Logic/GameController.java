@@ -16,6 +16,7 @@ import java.util.HashMap;
 public class GameController {
 
     private Game game;
+    private Boolean gameFinished;
 
     private final ObjectMapper mapper;
     private final Connection connection;
@@ -26,6 +27,8 @@ public class GameController {
     private HashMap<Integer, Hole> holeSprites;
     private HashMap<Integer, Turbo> turboSprites;
     private HashMap<Integer, Live> liveSprites;
+
+    private Player actualPlayer;
 
     /**
      * Constructor de la clase GameController
@@ -179,6 +182,14 @@ public class GameController {
         }
     }
 
+    public Player getActualPlayer() {
+        return actualPlayer;
+    }
+
+    public void setActualPlayer(Player player) {
+        actualPlayer = player;
+    }
+
     /**
      * Método para parsear el Json con la información de los jugadores
      * @param players Json con los datos de los jugadores
@@ -213,6 +224,7 @@ public class GameController {
             Integer pos = jsonNode.get("pos").asInt();
             Integer playerX = jsonNode.get("playerX").asInt();
             Integer lives = jsonNode.get("lives").asInt();
+            Integer points = jsonNode.get("points").asInt();
 
             Car playerCar = new Car(carColor);
             playerCar.setImage("/res/Carro"+carColor+".png", 120, 200);
@@ -220,6 +232,7 @@ public class GameController {
             playerObject.setLives(lives);
             playerObject.setPlayerX(playerX.floatValue());
             playerObject.setPos(pos);
+            playerObject.setPoints(points);
 
             playerCar.setProjectedPosX(playerX.doubleValue());
             playerCar.setProjectedPosY(pos.doubleValue());
@@ -613,5 +626,48 @@ public class GameController {
         } catch (JsonProcessingException ex) {
             ex.printStackTrace();
         }
+    }
+
+    public void finishGame() {
+        ObjectNode request = mapper.createObjectNode();
+        request.put("action", "finish_game");
+
+        try {
+            connection.connect(mapper.writeValueAsString(request));
+        } catch (JsonProcessingException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public Boolean isGameFinished() {
+        ObjectNode request = mapper.createObjectNode();
+        request.put("action", "is_game_finished");
+
+        String data = null;
+        try {
+            data = connection.connect(mapper.writeValueAsString(request));
+        } catch (JsonProcessingException ex) {
+            ex.printStackTrace();
+        }
+
+        if (data == null) return null;
+
+        JsonNode response;
+        try {
+            response = mapper.readTree(data);
+        } catch (JsonProcessingException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+
+        Integer status = response.get("game_state").asInt();
+
+        gameFinished = (status == 1);
+
+        return gameFinished;
+    }
+
+    public Boolean getGameFinished() {
+        return this.gameFinished;
     }
 }

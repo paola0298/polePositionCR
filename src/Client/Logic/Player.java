@@ -266,4 +266,8 @@ public class Player {
             this.lives = 3;
         }
     }
+
+    public void setPoints(Integer points) {
+        this.points = points;
+    }
 }

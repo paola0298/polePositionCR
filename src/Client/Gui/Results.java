@@ -23,7 +23,7 @@ public class Results extends Application {
     private GameController controller;
     private VBox mainLayout;
     @Override
-    public void start(Stage stage) throws Exception {
+    public void start(Stage stage) {
         controller = GameController.getInstance();
         mainLayout = new VBox();
         mainLayout.setAlignment(Pos.CENTER);
@@ -41,21 +41,21 @@ public class Results extends Application {
 
     private void showResults() {
         Text resultsText = new Text("Resultados");
-//        HashMap<Integer, Player> players = controller.getPlayerList();
-//        ArrayList<Player> playerArrayList = new ArrayList<>();
-//        Player first;
-//        Player second;
-//        for (Player player : players.values()) {
-//            System.out.println("");
-//            playerArrayList.add(player);
-//        }
-//        first = playerArrayList.get(1);
-//        second = playerArrayList.get(0);
-//
-//        if (playerArrayList.get(0).getPoints() > playerArrayList.get(1).getPoints()) {
-//            first = playerArrayList.get(0);
-//            second = playerArrayList.get(1);
-//        }
+        HashMap<Integer, Player> players = controller.getPlayerList();
+        ArrayList<Player> playerArrayList = new ArrayList<>();
+        Player first;
+        Player second;
+        for (Player player : players.values()) {
+            System.out.println("");
+            playerArrayList.add(player);
+        }
+        first = controller.getActualPlayer();
+        second = playerArrayList.get(0);
+
+        if (playerArrayList.get(0).getPoints() > controller.getActualPlayer().getPoints()) {
+            first = playerArrayList.get(0);
+            second = controller.getActualPlayer();
+        }
 
         HBox firstBox = new HBox();
         HBox secondBox = new HBox();
@@ -69,10 +69,12 @@ public class Results extends Application {
         ImageView firstImage = loadImageView("/res/first.png", 280, 216);
         ImageView secondImage = loadImageView("/res/second.png", 280, 216);
 
-//        Text firstText = new Text(first.getCarSelected().getCarColor());
-//        Text secondText = new Text(second.getCarSelected().getCarColor());
-        Label firstText = new Label("    Rojo \n3500 Puntos");
-        Label secondText = new Label("    Azul \n2000 Puntos");
+        Label firstText = new Label("    " + first.getCarSelected().getCarColor() + "\nPuntos: " +
+                first.getPoints());
+        Label secondText = new Label("    " + second.getCarSelected().getCarColor() + "\nPuntos: " +
+                second.getPoints());
+//        Label firstText = new Label("    Rojo \n3500 Puntos");
+//        Label secondText = new Label("    Azul \n2000 Puntos");
 
         firstBox.getChildren().addAll(firstImage, firstText);
         secondBox.getChildren().addAll(secondImage, secondText);
@@ -117,5 +119,9 @@ public class Results extends Application {
         addTokenImage.setFitWidth(width);
 
         return addTokenImage;
+    }
+
+    public static void show() {
+        new Results().start(new Stage());
     }
 }
