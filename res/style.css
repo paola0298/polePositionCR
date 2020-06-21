@@ -53,5 +53,6 @@
     -fx-stroke: white;
     -fx-stroke-width: 1;
     -fx-background-size: auto;
+    -fx-background-color: rgba(255, 255, 255, 0.5);
 }
 

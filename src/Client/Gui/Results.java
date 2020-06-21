@@ -74,7 +74,6 @@ public class Results extends Application {
         Label firstText = new Label("    Rojo \n3500 Puntos");
         Label secondText = new Label("    Azul \n2000 Puntos");
 
-
         firstBox.getChildren().addAll(firstImage, firstText);
         secondBox.getChildren().addAll(secondImage, secondText);
 
