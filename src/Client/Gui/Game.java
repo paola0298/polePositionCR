@@ -286,7 +286,7 @@ public class Game extends Application {
 //                }
 
                 //Dibujar sprites
-                for (Integer n = startpos + 200; n > startpos; n--) {
+                for (Integer n = startpos + 299; n > startpos; n--) {
                     Integer currentIndex = n % lineCount;
                     Line line  = trackLines.get(currentIndex);
                     if (line.spriteX < 0) {
