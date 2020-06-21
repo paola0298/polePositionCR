@@ -180,7 +180,7 @@ public class Game extends Application {
                 context.clearRect(0,0, width, height);
 
                 context.drawImage(background, 0, 0);
-                
+
                 pointsText.setText("Puntos: " + actualPlayer.getPoints());
 
                 //Evitar que startpos sea mayor a la cantidad de líneas.
@@ -203,6 +203,8 @@ public class Game extends Application {
                 if (players.size() > 0) {
                     waitText.setText("");
                     manageInput(input);
+                } else {
+                    waitText.setText("Esperando a otros jugadores");
                 }
 
                 actualPlayer.updatePos();
