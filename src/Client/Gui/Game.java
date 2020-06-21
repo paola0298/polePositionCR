@@ -123,8 +123,8 @@ public class Game extends Application {
         textLives.getStyleClass().add("text-game");
 
         waitText = new Text("Esperando a otros jugadores");
-        waitText.setLayoutX(400.0);
-        waitText.setLayoutY(100);
+        waitText.setLayoutX((width.floatValue() / 2) - 250);
+        waitText.setLayoutY(450);
         waitText.getStyleClass().add("text-game");
 
         lapsLives = new Text("Vueltas " + laps + "/3");
@@ -138,8 +138,8 @@ public class Game extends Application {
         pointsText.getStyleClass().add("text-game");
 
         timeText = new Text("Tiempo: " + gameInfo.getTime().intValue() + " s");
-        timeText.setLayoutY(70);
-        timeText.setLayoutX(420);
+        timeText.setLayoutY(100);
+        timeText.setLayoutX(20);
         timeText.getStyleClass().add("text-game");
 
         background = imageLoader(cwd.replaceAll("\\\\", "/") + "/res/mountain.png", 340d, 1024d);
@@ -373,14 +373,16 @@ public class Game extends Application {
                 visibleTurbos.clear();
                 visibleLives.clear();
 
-                double elapsedTime = (System.nanoTime() - prevTime) / 1E9;
-                gameInfo.updateTime(elapsedTime);
-                time += elapsedTime;
-                timeText.setText("Tiempo: " + gameInfo.getTime().intValue() + " s");
+                if (players.size() > 0) {
+                    double elapsedTime = (System.nanoTime() - prevTime) / 1E9;
+                    gameInfo.updateTime(elapsedTime);
+                    time += elapsedTime;
+                    timeText.setText("Tiempo: " + gameInfo.getTime().intValue() + " s");
 
-                if (time >= 10d) {
-                    actualPlayer.updatePoints(1);
-                    time = 0d;
+                    if (time >= 10d) {
+                        actualPlayer.updatePoints(1);
+                        time = 0d;
+                    }
                 }
             }
         };
