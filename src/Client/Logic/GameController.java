@@ -235,7 +235,7 @@ public class GameController {
             Integer points = jsonNode.get("points").asInt();
 
             Car playerCar = new Car(carColor);
-            playerCar.setImage("/res/Carro"+carColor+".png", 120, 200);
+            playerCar.setImage("/res/Carro"+carColor+".png", 100, 180);
             Player playerObject = new Player(playerCar);
             playerObject.setLives(lives);
             playerObject.setPlayerX(playerX.floatValue());
