@@ -221,6 +221,11 @@ public class GameController {
             playerObject.setPlayerX(playerX.floatValue());
             playerObject.setPos(pos);
 
+//            playerCar.setProjectedPosX();
+//            playerCar.setProjectedPosY();
+//            playerCar.setProjectedWidth();
+//            playerCar.setProjectedHeight();
+
             playerHashMap.put((pos / segmentLength), playerObject);
         }
 

@@ -180,6 +180,8 @@ public class Game extends Application {
                 context.clearRect(0,0, width, height);
 
                 context.drawImage(background, 0, 0);
+                
+                pointsText.setText("Puntos: " + actualPlayer.getPoints());
 
                 //Evitar que startpos sea mayor a la cantidad de líneas.
                 if (actualPlayer.getPos() >= lineCount * segmentLength) {
@@ -308,7 +310,7 @@ public class Game extends Application {
                     Player player = players.get(n);
                     if (player != null) {
                         Car playerCar = player.getCarSelected();
-                        line.spriteX = 0f; //
+                        line.spriteX = playerCar.getPosX().floatValue() / 1000f;
                         player.setCarSelected((Car) line.drawSprite(context, playerCar, playerCar.getImage()));
                     }
                 }
