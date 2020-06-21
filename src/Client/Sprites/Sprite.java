@@ -284,8 +284,11 @@ public class Sprite {
     }
 
     /**
+     * Método para cargar una imagen
      * @param path Ruta de la imagen
-     * @return El objeto de la imagen creada
+     * @param height Altura de la imagen
+     * @param width Ancho de la imagen
+     * @return Nuevo objeto tipo imagen
      */
     private Image imageLoader(String path, Double height, Double width){
         try{

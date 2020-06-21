@@ -416,7 +416,7 @@ public class GameController {
 
     /**
      * Método para verificar si un índice dado está dentro de algún rango en una lista
-     * @param i Índice actual
+     * @param i Indice actual
      * @param ranges Lista de rangos a verificar
      * @return El valor del rango si i pertenece a ese rango, 0 en caso contrario
      */
