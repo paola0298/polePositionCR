@@ -80,9 +80,12 @@ public class Game extends Application {
     private Integer sendDelay;
     private final Integer defaultSendDelay = 2;
 
+    private Stage gameStage;
+
 
     @Override
     public void start(Stage stage) {
+        gameStage = stage;
         controller = GameController.getInstance();
         controller.setGame(this);
         controller.setValues(segmentLength);
@@ -169,8 +172,10 @@ public class Game extends Application {
         gameLoop.start();
         stage.show();
         stage.setOnCloseRequest(windowEvent -> {
-            System.out.println("Closing");
-            controller.onExit();
+            if (!controller.getGameFinished()) {
+                System.out.println("Closing");
+                controller.onExit();
+            }
         });
     }
 
@@ -196,6 +201,11 @@ public class Game extends Application {
                     resetSprites();
                     controller.resetTurbos();
                     controller.resetLives();
+
+                    //TODO: arreglar cuando termina el juego.
+                    if (laps == 3) {
+                        controller.finishGame();
+                    }
                 }
 
                 //Evitar que startpos sea menor a cero.
@@ -366,6 +376,10 @@ public class Game extends Application {
                     turbos = controller.updateTurboList();
                     lives = controller.updateLiveList();
 
+                    if (controller.isGameFinished()) {
+                        showResults();
+                    }
+
                 } else {
                     sendDelay--;
                 }
@@ -387,6 +401,13 @@ public class Game extends Application {
                 }
             }
         };
+    }
+
+    private void showResults() {
+        gameLoop.stop();
+        controller.setActualPlayer(actualPlayer);
+        gameStage.close();
+        Results.show();
     }
 
     /**
