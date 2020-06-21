@@ -144,7 +144,7 @@ public class Game extends Application {
 
         background = imageLoader(cwd.replaceAll("\\\\", "/") + "/res/mountain.png", 340d, 1024d);
 
-        root.getChildren().addAll(canvas, gauge, textLives, lapsLives, waitText, pointsText);
+        root.getChildren().addAll(canvas, gauge, textLives, lapsLives, waitText, pointsText, timeText);
 
         scene.getStylesheets().add("file:///" + cwd.replaceAll("\\\\", "/") + "/res/style.css");
 
