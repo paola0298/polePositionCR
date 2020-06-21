@@ -221,7 +221,7 @@ public class GameController {
             playerObject.setPlayerX(playerX.floatValue());
             playerObject.setPos(pos);
 
-            playerHashMap.put(pos, playerObject);
+            playerHashMap.put((pos / segmentLength), playerObject);
         }
 
         return playerHashMap;

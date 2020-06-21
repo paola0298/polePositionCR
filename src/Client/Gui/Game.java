@@ -307,7 +307,9 @@ public class Game extends Application {
 
                     Player player = players.get(n);
                     if (player != null) {
-                        player.setCarSelected((Car) line.drawSprite(context, player.getCarSelected(), player.getCarSelected().getImage()));
+                        Car playerCar = player.getCarSelected();
+                        line.spriteX = 0f; //
+                        player.setCarSelected((Car) line.drawSprite(context, playerCar, playerCar.getImage()));
                     }
                 }
 
