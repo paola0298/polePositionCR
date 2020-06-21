@@ -17,6 +17,13 @@
     /*-fx-background-color: #484f59;*/
 }
 
+.results-background {
+    -fx-background-image: url("racing.jpg");
+    /*-fx-background-size: cover, auto;*/
+    -fx-background-position: center;
+    -fx-background-repeat: no-repeat;
+}
+
 .fancytext {
     -fx-font: 100px Tahoma;
     /*-fx-fill: linear-gradient(from 0% 0% to 100% 200%, repeat, aqua 0%, red 50%);*/
@@ -38,5 +45,13 @@
     -fx-fill: #111111;
     -fx-stroke: #111111;
     -fx-stroke-width: 1;
+}
+
+.text-game1 {
+    -fx-font: 40px Tahoma;
+    -fx-fill: white;
+    -fx-stroke: white;
+    -fx-stroke-width: 1;
+    -fx-background-size: auto;
 }
 

@@ -22,7 +22,7 @@ public class PrincipalMenu extends Application {
 
     private final String cwd = System.getProperty("user.dir");
     private VBox menuWindow; // Ventana del menu principal
-    private VBox carMenuWindow; // Venta donde se elige el auto
+    private VBox carMenuWindow; // Ventana donde se elige el auto
     private StackPane mainLayout;
     private GameController controller;
 
