@@ -99,7 +99,9 @@ public class Line {
         float clipH = destY + destH - clip;
         if (clipH < 0) clipH = 0;
 
+
         if (clipH >= destH) {
+            sprite.setProjectionValid(false);
             return sprite;
         }
 
@@ -109,6 +111,8 @@ public class Line {
         sprite.setProjectedPosY(destY.doubleValue());
         sprite.setProjectedWidth(destW.doubleValue());
         sprite.setProjectedHeight(destH.doubleValue());
+        sprite.setProjectionValid(true);
+
         return sprite;
     }
 }

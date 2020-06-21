@@ -286,7 +286,8 @@ public class Game extends Application {
 //                }
 
                 //Dibujar sprites
-                for (Integer n = startpos + 299; n > startpos; n--) {
+//                for (Integer n = startpos + 299; n > startpos; n--) {
+                for (Integer n = startpos; n < startpos + 300; n++) {
                     Integer currentIndex = n % lineCount;
                     Line line  = trackLines.get(currentIndex);
                     if (line.spriteX < 0) {
@@ -438,6 +439,7 @@ public class Game extends Application {
 
         //Verificar si el jugador choca con un hueco
         for (Hole hole : visibleHoles) {
+            if (!hole.isProjectionValid()) continue;
             if (playerCar.intersects(hole) && !actualPlayer.isCrashed() && !hole.carCrashed) {
                 actualPlayer.crashed();
                 hole.setCarCrashed(true);
@@ -447,6 +449,7 @@ public class Game extends Application {
 
         //Verificar si el jugador toma un turbo
         for (Turbo turbo : visibleTurbos) {
+            if (!turbo.isProjectionValid()) continue;
             if (playerCar.intersects(turbo) && !turbo.isTaken()) {
                 actualPlayer.Turbo();
                 turbo.setTaken(true);
@@ -457,6 +460,7 @@ public class Game extends Application {
 
         //Verificar si el jugador toma una vida
         for (Live live: visibleLives) {
+            if (!live.isProjectionValid()) continue;
             if (playerCar.intersects(live) && !live.isTaken()) {
                 actualPlayer.gotLive();
                 live.setTaken(true);
